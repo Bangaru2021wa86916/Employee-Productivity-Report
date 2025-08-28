@@ -1,0 +1,5 @@
+flask
+flask-cors
+pdfkit
+xhtml2pdf
+mysql-connector-python
