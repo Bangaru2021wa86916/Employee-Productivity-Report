@@ -4,7 +4,8 @@
   <title>Employee Productivity Report</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<center>
+<body>
+  <center>
   <h1>Productivity Report</h1>
   <input type="text" id="nameInput" placeholder="Enter employee name">
   <button onclick="getReport()">Get Report</button>
@@ -21,10 +22,10 @@
   <input type="text" id="delName" placeholder="Name">
   <button onclick="deleteEmployee()">Delete</button>
 
-<h2><button onclick="window.location.href='/download/csv'">Download CSV</button></h2>
-<h2><button onclick="window.location.href='/download/pdf'">Download PDF</button></h2>
+  <h2><button onclick="window.location.href='/download/csv'">Download CSV</button></h2>
+  <h2><button onclick="window.location.href='/download/pdf'">Download PDF</button></h2>
 
   <script src="script.js"></script>
-</center>
+  </center>
 </body>
 </html>
