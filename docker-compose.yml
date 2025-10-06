@@ -1,17 +1,24 @@
 version: '3'
 services:
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - emp_net
+
   backend:
-    build: .
+    build: ./backend
     container_name: backend
     ports:
       - "5000:5000"
     depends_on:
       - db
-    environment:
-      - MYSQL_HOST=db
-      - MYSQL_USER=root
-      - MYSQL_PASSWORD=password
-      - MYSQL_DATABASE=employee_db
+    networks:
+      - emp_net
 
   db:
     image: mysql:5.7
@@ -24,6 +31,11 @@ services:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
+    networks:
+      - emp_net
 
 volumes:
   db_data:
+
+networks:
+  emp_net:
