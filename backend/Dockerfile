@@ -1,9 +1,6 @@
 # Base image with wkhtmltopdf preinstalled
 FROM madnight/docker-alpine-wkhtmltopdf:latest
 
-# Install Python and pip
-RUN apk add --no-cache python3 py3-pip
-
 # Set working directory
 WORKDIR /app
 
