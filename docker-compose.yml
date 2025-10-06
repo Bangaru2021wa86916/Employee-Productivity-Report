@@ -1,25 +1,29 @@
-version: '3.8'
-
+version: '3'
 services:
   backend:
-    build: ./backend
+    build: .
+    container_name: backend
     ports:
       - "5000:5000"
     depends_on:
       - db
-
-  frontend:
-    build: ./frontend
-    ports:
-      - "80:80"
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=password
+      - MYSQL_DATABASE=employee_db
 
   db:
     image: mysql:5.7
+    container_name: db
+    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: employee_db
+    ports:
+      - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
 
 volumes:
   db_data:
