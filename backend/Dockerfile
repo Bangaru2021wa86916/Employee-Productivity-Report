@@ -4,10 +4,6 @@ FROM madnight/docker-alpine-wkhtmltopdf:latest
 # Set working directory
 WORKDIR /app
 
-# Copy dependencies and install
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
 # Copy app files
 COPY . .
 
