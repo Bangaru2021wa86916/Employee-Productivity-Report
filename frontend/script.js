@@ -1,35 +1,52 @@
 <script>
-    let token = '';
+  let token = '';
 
-    async function login() {
-      const username = document.getElementById("username").value;
-      const password = document.getElementById("password").value;
+  async function login() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
 
-      const res = await fetch("http://localhost:5000/login", {
+    try {
+      const res = await fetch("http://127.0.0.1:5000/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password })
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        token = data.token;
-        document.getElementById("login-section").style.display = "none";
-        document.getElementById("employee-section").style.display = "block";
-        loadEmployees();
-      } else {
-        alert("Invalid login");
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.msg || "Login failed!");
+        return;
       }
-    }
 
-    async function loadEmployees() {
-      const res = await fetch("http://localhost:5000/employees", {
+      const data = await res.json();
+      token = data.token;
+
+      document.getElementById("login-section").style.display = "none";
+      document.getElementById("employee-section").style.display = "block";
+
+      await loadEmployees();
+    } catch (err) {
+      console.error("Login error:", err);
+      alert("Unable to reach the server. Make sure Flask is running.");
+    }
+  }
+
+  async function loadEmployees() {
+    try {
+      const res = await fetch("http://127.0.0.1:5000/employees", {
         headers: { "Authorization": "Bearer " + token }
       });
-      const data = await res.json();
 
+      if (!res.ok) {
+        alert("Token expired or invalid. Please log in again.");
+        location.reload();
+        return;
+      }
+
+      const data = await res.json();
       const table = document.getElementById("employee-table");
       table.innerHTML = '';
+
       data.forEach(emp => {
         table.innerHTML += `
           <tr>
@@ -41,15 +58,20 @@
             <td><button onclick="updateEmployee(${emp.id})">Save</button></td>
           </tr>`;
       });
+    } catch (err) {
+      console.error("Load error:", err);
+      alert("Could not fetch employee data.");
     }
+  }
 
-    async function updateEmployee(id) {
-      const name = document.getElementById(`name-${id}`).value;
-      const role = document.getElementById(`role-${id}`).value;
-      const feedback = document.getElementById(`feedback-${id}`).value;
-      const rating = parseFloat(document.getElementById(`rating-${id}`).value);
+  async function updateEmployee(id) {
+    const name = document.getElementById(`name-${id}`).value;
+    const role = document.getElementById(`role-${id}`).value;
+    const feedback = document.getElementById(`feedback-${id}`).value;
+    const rating = parseFloat(document.getElementById(`rating-${id}`).value);
 
-      const res = await fetch(`http://localhost:5000/employee/${id}`, {
+    try {
+      const res = await fetch(`http://127.0.0.1:5000/employee/${id}`, {
         method: "PUT",
         headers: {
           "Authorization": "Bearer " + token,
@@ -58,11 +80,17 @@
         body: JSON.stringify({ name, role, feedback, rating })
       });
 
+      const data = await res.json();
+
       if (res.ok) {
-        alert("Employee updated successfully!");
-        loadEmployees();
+        alert("✅ Employee updated successfully!");
+        await loadEmployees();
       } else {
-        alert("Failed to update employee");
+        alert("❌ " + (data.msg || "Failed to update employee"));
       }
+    } catch (err) {
+      console.error("Update error:", err);
+      alert("Server error while updating employee.");
     }
-  </script>
+  }
+</script>
