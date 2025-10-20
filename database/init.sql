@@ -26,4 +26,4 @@ INSERT INTO productivity (name, role, productivity, feedback, rating) VALUES
 
 -- Insert default admin
 INSERT INTO admins (username, password_hash)
-VALUES ('admin', '$pbkdf2-sha256$29000$abcxyz$hashedpasswordexample');
+VALUES ('admin', '32768:8:1$VGCe9Tr0Bne38zn6$729fdd07d4e1c2aa892597fce8341ba8cd5dfa11ee0d43f87351a406eaa7462c4fd7382e420e288648c9c41ce91ffdee7f4d79fac251318232addd5067f9713d');
