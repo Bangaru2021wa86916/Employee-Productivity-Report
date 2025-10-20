@@ -1,46 +1,42 @@
-const API_BASE = "http://localhost:5000";
+const backendURL = "http://localhost:5000";
 
-async function fetchAll() {
-  const res = await fetch(`${API_BASE}/report?name=%`);
-  const data = await res.json();
-  const tbody = document.querySelector("#reportTable tbody");
-  tbody.innerHTML = "";
-  data.forEach(emp => {
-    const row = `<tr><td>${emp.name}</td><td>${emp.role}</td><td>${emp.productivity}</td></tr>`;
-    tbody.innerHTML += row;
-  });
+function getReport() {
+  const name = document.getElementById("nameInput").value;
+  fetch(`${backendURL}/report?name=${name}`)
+    .then(res => res.json())
+    .then(data => {
+      const report = document.getElementById("report");
+      if (data.length === 0) {
+        report.innerHTML = "No report found.";
+      } else {
+        const emp = data[0];
+        report.innerHTML = `
+          <h3>Report for ${emp.name}</h3>
+          <p><strong>Role:</strong> ${emp.role}</p>
+          <p><strong>Productivity:</strong> ${emp.productivity}%</p>
+        `;
+      }
+    });
 }
 
-async function addEmployee() {
-  const name = document.getElementById("name").value;
-  const role = document.getElementById("role").value;
-  const productivity = document.getElementById("productivity").value;
 
-  await fetch(`${API_BASE}/add`, {
+function addEmployee() {
+  const name = document.getElementById("addName").value;
+  const role = document.getElementById("addRole").value;
+  const productivity = document.getElementById("addProd").value;
+  fetch(`${backendURL}/add`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, role, productivity })
-  });
-
-  alert("Employee added!");
-  fetchAll();
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, role, productivity })  // Use object, not array
+  }).then(res => res.json()).then(data => alert(data.message));
 }
 
-async function deleteEmployee() {
-  const name = document.getElementById("name").value;
-  await fetch(`${API_BASE}/delete`, {
+
+function deleteEmployee() {
+  const name = document.getElementById("delName").value;
+  fetch(`${backendURL}/delete`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name })
-  });
-  alert("Employee deleted!");
-  fetchAll();
-}
-
-function downloadCSV() {
-  window.open(`${API_BASE}/download/csv`, "_blank");
-}
-
-function downloadPDF() {
-  window.open(`${API_BASE}/download/pdf`, "_blank");
+  }).then(res => res.json()).then(data => alert(data.message));
 }
