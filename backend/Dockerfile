@@ -1,14 +1,5 @@
-# Base image with wkhtmltopdf preinstalled
-FROM madnight/docker-alpine-wkhtmltopdf:latest
-
-# Set working directory
+FROM python:3.9
 WORKDIR /app
-
-# Copy app files
 COPY . .
-
-# Expose Flask port
-EXPOSE 5000
-
-# Start the Flask app
-CMD ["python3", "app.py"]
+RUN pip install -r requirements.txt
+CMD ["python", "app.py"]
