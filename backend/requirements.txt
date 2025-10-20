@@ -1,9 +1,5 @@
-Flask==3.0.3
-flask-cors==4.0.0
-mysql-connector-python==8.3.0
-pdfkit==1.0.0
-xhtml2pdf==0.2.15
-Werkzeug==3.0.3
-itsdangerous==2.2.0
-Jinja2==3.1.4
-MarkupSafe==2.1.5
+flask
+flask-cors
+pdfkit
+xhtml2pdf
+mysql-connector-python
