@@ -5,13 +5,12 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-import os
 def get_connection():
     return mysql.connector.connect(
-        host=os.environ.get("DB_HOST","db"),
-        user=os.environ.get("DB_USER","appuser"),
-        password=os.environ.get("DB_PASSWORD"),
-        database=os.environ.get("DB_NAME","employee_db")
+        host="db",
+        user="root",
+        password="password",
+        database="employee_db"
     )
 
 @app.route('/report', methods=['GET'])
@@ -37,7 +36,7 @@ def add_employee():
     conn.commit()
     cursor.close()
     conn.close()
-    return jsonify({'message': 'Employee added successfully'}), 201
+    return jsonify({'message': 'Employee added successfully'})
 
 @app.route('/delete', methods=['POST'])
 def delete_employee():
