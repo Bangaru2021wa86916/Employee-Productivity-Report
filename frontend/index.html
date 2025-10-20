@@ -1,37 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Employee Productivity Report</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Employee Productivity Report</h1>
+  <center>
+  <h1>Productivity Report</h1>
+  <input type="text" id="nameInput" placeholder="Enter employee name">
+  <button onclick="getReport()">Get Report</button>
 
-  <div class="form-container">
-    <input type="text" id="name" placeholder="Employee Name">
-    <input type="text" id="role" placeholder="Role">
-    <input type="number" id="productivity" placeholder="Productivity %">
-    <button onclick="addEmployee()">Add Employee</button>
-    <button onclick="deleteEmployee()">Delete Employee</button>
-  </div>
+  <div id="report"></div>
 
-  <button onclick="fetchAll()">Show All Reports</button>
-  <button onclick="downloadCSV()">Download CSV</button>
-  <button onclick="downloadPDF()">Download PDF</button>
+  <h2>Add Employee</h2>
+  <input type="text" id="addName" placeholder="Name">
+  <input type="text" id="addRole" placeholder="Role">
+  <input type="number" id="addProd" placeholder="Productivity %">
+  <button onclick="addEmployee()">Add</button>
 
-  <table id="reportTable">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Role</th>
-        <th>Productivity</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <h2>Delete Employee</h2>
+  <input type="text" id="delName" placeholder="Name">
+  <button onclick="deleteEmployee()">Delete</button>
+
+  <h2><button onclick="window.location.href='/download/csv'">Download CSV</button></h2>
+  <h2><button onclick="window.location.href='/download/pdf'">Download PDF</button></h2>
 
   <script src="script.js"></script>
+  </center>
 </body>
 </html>
