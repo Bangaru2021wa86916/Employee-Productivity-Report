@@ -1,55 +1,25 @@
 version: '3.8'
 
 services:
-  frontend:
-    build: ./frontend
-    container_name: frontend
-    ports:
-      - "8080:80"
-    depends_on:
-      - backend
-    networks:
-      - emp_net
-
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: backend
+    build: ./backend
     ports:
       - "5000:5000"
     depends_on:
       - db
-    environment:
-      - MYSQL_HOST=db
-      - MYSQL_USER=root
-      - MYSQL_PASSWORD=password
-      - MYSQL_DATABASE=employee_db
-    networks:
-      - emp_net
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/report?name=test"]
-      interval: 20s
-      timeout: 10s
-      retries: 3
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
 
   db:
     image: mysql:5.7
-    container_name: db
-    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: employee_db
-    ports:
-      - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
-    networks:
-      - emp_net
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
 
 volumes:
   db_data:
-
-networks:
-  emp_net:
-    name: emp_net
