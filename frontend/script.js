@@ -1,42 +1,68 @@
-const backendURL = "http://localhost:5000";
+<script>
+    let token = '';
 
-function getReport() {
-  const name = document.getElementById("nameInput").value;
-  fetch(`${backendURL}/report?name=${name}`)
-    .then(res => res.json())
-    .then(data => {
-      const report = document.getElementById("report");
-      if (data.length === 0) {
-        report.innerHTML = "No report found.";
+    async function login() {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      const res = await fetch("http://localhost:5000/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        token = data.token;
+        document.getElementById("login-section").style.display = "none";
+        document.getElementById("employee-section").style.display = "block";
+        loadEmployees();
       } else {
-        const emp = data[0];
-        report.innerHTML = `
-          <h3>Report for ${emp.name}</h3>
-          <p><strong>Role:</strong> ${emp.role}</p>
-          <p><strong>Productivity:</strong> ${emp.productivity}%</p>
-        `;
+        alert("Invalid login");
       }
-    });
-}
+    }
 
+    async function loadEmployees() {
+      const res = await fetch("http://localhost:5000/employees", {
+        headers: { "Authorization": "Bearer " + token }
+      });
+      const data = await res.json();
 
-function addEmployee() {
-  const name = document.getElementById("addName").value;
-  const role = document.getElementById("addRole").value;
-  const productivity = document.getElementById("addProd").value;
-  fetch(`${backendURL}/add`, {
-    method: "POST",
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, role, productivity })  // Use object, not array
-  }).then(res => res.json()).then(data => alert(data.message));
-}
+      const table = document.getElementById("employee-table");
+      table.innerHTML = '';
+      data.forEach(emp => {
+        table.innerHTML += `
+          <tr>
+            <td>${emp.id}</td>
+            <td><input value="${emp.name}" id="name-${emp.id}"></td>
+            <td><input value="${emp.role}" id="role-${emp.id}"></td>
+            <td><input value="${emp.feedback}" id="feedback-${emp.id}"></td>
+            <td><input value="${emp.rating}" id="rating-${emp.id}" type="number" step="0.1"></td>
+            <td><button onclick="updateEmployee(${emp.id})">Save</button></td>
+          </tr>`;
+      });
+    }
 
+    async function updateEmployee(id) {
+      const name = document.getElementById(`name-${id}`).value;
+      const role = document.getElementById(`role-${id}`).value;
+      const feedback = document.getElementById(`feedback-${id}`).value;
+      const rating = parseFloat(document.getElementById(`rating-${id}`).value);
 
-function deleteEmployee() {
-  const name = document.getElementById("delName").value;
-  fetch(`${backendURL}/delete`, {
-    method: "POST",
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name })
-  }).then(res => res.json()).then(data => alert(data.message));
-}
+      const res = await fetch(`http://localhost:5000/employee/${id}`, {
+        method: "PUT",
+        headers: {
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ name, role, feedback, rating })
+      });
+
+      if (res.ok) {
+        alert("Employee updated successfully!");
+        loadEmployees();
+      } else {
+        alert("Failed to update employee");
+      }
+    }
+  </script>
