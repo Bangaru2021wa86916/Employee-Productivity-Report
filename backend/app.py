@@ -1,79 +1,64 @@
-from flask import Flask, request, jsonify
-import mysql.connector
+from flask import Flask, jsonify, request
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required
 from flask_cors import CORS
+import datetime
 
 app = Flask(__name__)
 CORS(app)
 
-def get_connection():
-    return mysql.connector.connect(
-        host="db",
-        user="root",
-        password="password", 
-        database="employee_db"
-    )
+# Secret key for JWT
+app.config["JWT_SECRET_KEY"] = "super-secret-key"  # change this in production
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = datetime.timedelta(hours=1)
+jwt = JWTManager(app)
 
-@app.route('/report', methods=['GET'])
-def get_report():
-    name = request.args.get('name')
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM productivity WHERE name = %s", (name,))
-    result = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return jsonify(result)
+# Admin credentials (you can move this to DB later)
+admins = {
+    "admin": "admin123"
+}
 
-@app.route('/add', methods=['POST'])
-def add_employee():
-    data = request.json
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO productivity (name, role, productivity) VALUES (%s, %s, %s)",
-        (data['name'], data['role'], data['productivity'])
-    )
-    conn.commit()
-    cursor.close()
-    conn.close()
-    return jsonify({'message': 'Employee added successfully'})
+# Sample employee data
+employees = [
+    {"id": 1, "name": "Kishore", "role": "Azure Cloud Developer", "feedback": "Excellent", "rating": 4.7},
+    {"id": 2, "name": "Ravi", "role": "GCP Architect", "feedback": "Good work", "rating": 4.4},
+    {"id": 3, "name": "Sanjay", "role": "AWS Associate", "feedback": "Improving", "rating": 4.1}
+]
 
-@app.route('/delete', methods=['POST'])
-def delete_employee():
-    data = request.json
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM productivity WHERE name = %s", (data['name'],))
-    conn.commit()
-    cursor.close()
-    conn.close()
-    return jsonify({'message': 'Employee deleted successfully'})
+# --- ADMIN LOGIN (JWT Authentication) ---
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    username = data.get("username")
+    password = data.get("password")
 
-@app.route('/download/csv')
-def download_csv():
-    # Fetch data from database
-    cursor = mysql.connection.cursor()
-    cursor.execute("SELECT * FROM productivity")
-    rows = cursor.fetchall()
-    
-    # Convert to CSV format
-    output = io.StringIO()
-    writer = csv.writer(output)
-    writer.writerow(['Employee ID', 'Name', 'Role', 'Hours Worked', 'Tasks Completed'])  # headers
-    writer.writerows(rows)
-    output.seek(0)
-
-    return Response(output, mimetype="text/csv",
-                    headers={"Content-Disposition": "attachment;filename=productivity_report.csv"})
-
-@app.route('/download/pdf')
-def download_pdf():
-    rendered = render_template("report_template.html", data=rows)
-    pdf = pdfkit.from_string(rendered, False)
-    return Response(pdf, mimetype="application/pdf",
-                    headers={"Content-Disposition": "attachment;filename=productivity_report.pdf"})
+    if username in admins and admins[username] == password:
+        access_token = create_access_token(identity=username)
+        return jsonify({"token": access_token}), 200
+    return jsonify({"msg": "Invalid credentials"}), 401
 
 
+# --- GET EMPLOYEES ---
+@app.route("/employees", methods=["GET"])
+@jwt_required()
+def get_employees():
+    return jsonify(employees)
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+
+# --- UPDATE EMPLOYEE ---
+@app.route("/employee/<int:emp_id>", methods=["PUT"])
+@jwt_required()
+def update_employee(emp_id):
+    data = request.get_json()
+    for emp in employees:
+        if emp["id"] == emp_id:
+            emp.update({
+                "name": data.get("name", emp["name"]),
+                "role": data.get("role", emp["role"]),
+                "feedback": data.get("feedback", emp["feedback"]),
+                "rating": data.get("rating", emp["rating"])
+            })
+            return jsonify({"msg": "Employee updated successfully", "employee": emp}), 200
+    return jsonify({"msg": "Employee not found"}), 404
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
