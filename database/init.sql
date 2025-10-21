@@ -24,9 +24,12 @@ INSERT INTO productivity (name, role, productivity, feedback, rating) VALUES
 ('Ravi', 'GCP Architect', 85, 'Strong architectural understanding; needs better documentation.', 4.4),
 ('Sanjay', 'AWS Associate', 80, 'Good performance; needs to engage in reviews.', 4.1);
 
+DELETE FROM admins WHERE username = 'admin';
 
-UPDATE admins
-SET password_hash = 'scrypt:32768:8:1$0oWbNA1zxdGf9Dbw$35f0262c06031346ed85eb30d5a40d3c7402be2452f400888d9d6f3952e0cd6e9dd592fb37f350027bfa9ae625a3e10f217329429fc67e573f49804207da374e'
-WHERE username = 'admin';
+INSERT INTO admins (username, password_hash)
+VALUES (
+    'admin',
+    'scrypt:32768:8:1$0oWbNA1zxdGf9Dbw$35f0262c06031346ed85eb30d5a40d3c7402be2452f400888d9d6f3952e0cd6e9dd592fb37f350027bfa9ae625a3e10f217329429fc67e573f49804207da374e'
+);
 
 SELECT id, username, password_hash FROM admins WHERE username='admin';
