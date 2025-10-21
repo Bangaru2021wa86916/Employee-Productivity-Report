@@ -16,9 +16,9 @@ jwt = JWTManager(app)
 # --- Database connection ---
 def get_db_connection():
     return mysql.connector.connect(
-        host="localhost",
-        user="root",          # change if different
-        password="",          # your MySQL password here
+        host="db",
+        user="root",
+        password="password",
         database="employee_db"
     )
 
@@ -42,7 +42,6 @@ def login():
 
     return jsonify({"msg": "Invalid username or password"}), 401
 
-
 # --- Get all employees ---
 @app.route("/employees", methods=["GET"])
 @jwt_required()
@@ -54,7 +53,6 @@ def get_employees():
     cursor.close()
     conn.close()
     return jsonify(employees), 200
-
 
 # --- Update employee ---
 @app.route("/employee/<int:emp_id>", methods=["PUT"])
@@ -78,7 +76,6 @@ def update_employee(emp_id):
     conn.close()
 
     return jsonify({"msg": "Employee updated successfully"}), 200
-
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
