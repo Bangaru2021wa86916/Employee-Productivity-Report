@@ -26,10 +26,16 @@ INSERT INTO productivity (name, role, productivity, feedback, rating) VALUES
 
 -- Insert default admin
 INSERT INTO admins (username, password_hash)
-VALUES ('admin', 'scrypt:32768:8:1$VGCe9Tr0Bne38zn6$729fdd07d4e1c2aa892597fce8341ba8cd5dfa11ee0d43f87351a406eaa7462c4fd7382e420e288648c9c41ce91ffdee7f4d79fac251318232addd5067f9713d');
+VALUES ('admin', 'scrypt:32768:8:1$0oWbNA1zxdGf9Dbw$35f0262c06031346ed85eb30d5a40d3c7402be2452f400888d9d6f3952e0cd6e9dd592fb37f350027bfa9ae625a3e10f217329429fc67e573f49804207da374e');
 
 -- Delete previous admins to avoid conflicts
 DELETE FROM admins;
 
 INSERT INTO admins (username, password_hash)
-VALUES ('admin', 'scrypt:32768:8:1$VGCe9Tr0Bne38zn6$729fdd07d4e1c2aa892597fce8341ba8cd5dfa11ee0d43f87351a406eaa7462c4fd7382e420e288648c9c41ce91ffdee7f4d79fac251318232addd5067f9713d');
+VALUES ('admin', 'scrypt:32768:8:1$0oWbNA1zxdGf9Dbw$35f0262c06031346ed85eb30d5a40d3c7402be2452f400888d9d6f3952e0cd6e9dd592fb37f350027bfa9ae625a3e10f217329429fc67e573f49804207da374e');
+
+UPDATE admins
+SET password_hash = 'scrypt:32768:8:1$0oWbNA1zxdGf9Dbw$35f0262c06031346ed85eb30d5a40d3c7402be2452f400888d9d6f3952e0cd6e9dd592fb37f350027bfa9ae625a3e10f217329429fc67e573f49804207da374e'
+WHERE username = 'admin';
+
+SELECT id, username, password_hash FROM admins WHERE username='admin';
