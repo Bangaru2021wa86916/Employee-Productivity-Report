@@ -12,7 +12,6 @@ from mysql.connector import pooling
 import datetime
 import logging
 import os
-from functools import wraps
 
 # ----------------------------------------
 # Logging
@@ -68,10 +67,12 @@ def check_if_token_in_blacklist(jwt_header, jwt_payload):
 # ----------------------------------------
 # Routes
 # ----------------------------------------
+
 @app.route('/')
 def health():
     return jsonify({"status": "running"}), 200
 
+# ---------- LOGIN ----------
 @app.route("/login", methods=["POST"])
 @limiter.limit("5 per minute")
 def login():
@@ -95,17 +96,21 @@ def login():
     token = create_access_token(identity=username)
     return jsonify({"token": token}), 200
 
+
+# ---------- GET ALL EMPLOYEES ----------
 @app.route("/employees", methods=["GET"])
 @jwt_required()
 def get_employees():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM productivity")
+    cursor.execute("SELECT * FROM productivity ORDER BY id ASC")
     employees = cursor.fetchall()
     cursor.close()
     conn.close()
     return jsonify({"employees": employees}), 200
 
+
+# ---------- UPDATE EMPLOYEE ----------
 @app.route("/employee/<int:emp_id>", methods=["PUT"])
 @jwt_required()
 def update_employee(emp_id):
@@ -114,6 +119,9 @@ def update_employee(emp_id):
     role = data.get("role")
     feedback = data.get("feedback")
     rating = data.get("rating")
+
+    if not all([name, role]):
+        return jsonify({"msg": "Missing required fields"}), 400
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -125,7 +133,49 @@ def update_employee(emp_id):
     conn.commit()
     cursor.close()
     conn.close()
-    return jsonify({"msg": "Employee updated"}), 200
+    return jsonify({"msg": "Employee updated successfully"}), 200
 
+
+# ---------- ADD NEW EMPLOYEE ----------
+@app.route("/add", methods=["POST"])
+@jwt_required()
+def add_employee():
+    data = request.get_json()
+    name = data.get("name")
+    role = data.get("role")
+    productivity = data.get("productivity", 0)
+    feedback = data.get("feedback", "")
+    rating = data.get("rating", None)
+
+    # Validation
+    if not name or not role:
+        return jsonify({"msg": "Name and role are required"}), 400
+    if not isinstance(productivity, int) or productivity < 0 or productivity > 100:
+        return jsonify({"msg": "Productivity must be a valid percentage (0-100)"}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO productivity (name, role, productivity, feedback, rating)
+        VALUES (%s, %s, %s, %s, %s)
+    """, (name, role, productivity, feedback, rating))
+    conn.commit()
+    new_id = cursor.lastrowid
+    cursor.close()
+    conn.close()
+
+    return jsonify({"msg": "Employee added successfully", "id": new_id}), 201
+
+
+# ---------- LOGOUT ----------
+@app.route("/logout", methods=["POST"])
+@jwt_required()
+def logout():
+    jti = get_jwt()["jti"]
+    blacklisted_tokens.add(jti)
+    return jsonify({"msg": "Successfully logged out"}), 200
+
+
+# ---------- MAIN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
