@@ -6,7 +6,7 @@ from flask_jwt_extended import (
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from werkzeug.security import generate_password_hash
+from passlib.hash import pbkdf2_sha256
 import mysql.connector
 from mysql.connector import pooling
 import datetime
