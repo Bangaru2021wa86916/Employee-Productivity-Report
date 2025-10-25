@@ -1,25 +1,44 @@
-version: '3.8'
+version: "3.9"
 
 services:
+  db:
+    image: mysql:5.7
+    container_name: mysql-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: employee_db
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - emp_net
+
   backend:
     build: ./backend
-    ports:
-      - "5000:5000"
+    container_name: backend
+    restart: always
     depends_on:
       - db
+    environment:
+      - JWT_SECRET_KEY=super-secret-key
+    ports:
+      - "5000:5000"
+    networks:
+      - emp_net
 
   frontend:
     build: ./frontend
+    container_name: frontend
+    restart: always
+    depends_on:
+      - backend
     ports:
-      - "80:80"
+      - "8080:80"
+    networks:
+      - emp_net
 
-  db:
-    image: mysql:5.7
-    environment:
-      MYSQL_ROOT_PASSWORD: password
-    volumes:
-      - db_data:/var/lib/mysql
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+networks:
+  emp_net:
 
 volumes:
   db_data:
