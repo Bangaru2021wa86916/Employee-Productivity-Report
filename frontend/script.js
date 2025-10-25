@@ -9,7 +9,7 @@ async function login() {
   const password = document.getElementById("password").value;
 
   try {
-    const res = await fetch(`${"http://backend:5000/report"}/login`, {
+    const res = await fetch(`${"http://backend:5000"}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password })
