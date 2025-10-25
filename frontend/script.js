@@ -33,7 +33,7 @@ async function login() {
 // --- Load Employees ---
 async function loadEmployees() {
   try {
-    const res = await fetch(`${backendURL}/employees`, {
+    const res = await fetch(`${"http://backend:5000/report"}/employees`, {
       headers: { "Authorization": `Bearer ${token}` }
     });
     const data = await res.json();
