@@ -25,4 +25,4 @@ CREATE TABLE IF NOT EXISTS admins (
 
 -- password = admin123 (pbkdf2_sha256)
 INSERT INTO admins (username, password_hash)
-VALUES ('admin', '$pbkdf2-sha256$29000$3ZJ/91hKeWekCk2zW1upGA$VWR7oxM0wC3ZcdCzY4LZY2wRLrKFKMou7dASzT2Lj98');
+VALUES ('admin', '$pbkdf2-sha256$29000$o3RujTFmrFUKAaCUkvKeEw$xn0DI55/qRI44qV/79Zd0MDuhjW/Cp0nUumdmvsQ7LY');
