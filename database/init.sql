@@ -1,35 +1,14 @@
 CREATE DATABASE IF NOT EXISTS employee_db;
 USE employee_db;
 
--- Admin table for secure login
-CREATE TABLE IF NOT EXISTS admins (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL  -- store hashed passwords for security
-);
-
--- Employee productivity table with new fields
 CREATE TABLE IF NOT EXISTS productivity (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    role VARCHAR(100) NOT NULL,
-    productivity INT DEFAULT 0,
-    feedback TEXT,
-    rating DECIMAL(3,1) DEFAULT 0.0
+    name VARCHAR(100),
+    role VARCHAR(100),
+    productivity INT
 );
 
--- Insert sample employees
-INSERT INTO productivity (name, role, productivity, feedback, rating) VALUES
-('Kishore', 'Azure Cloud Developer', 90, 'Excellent Azure automation and DevOps contribution.', 4.7),
-('Ravi', 'GCP Architect', 85, 'Strong architectural understanding; needs better documentation.', 4.4),
-('Sanjay', 'AWS Associate', 80, 'Good performance; needs to engage in reviews.', 4.1);
-
-DELETE FROM admins WHERE username = 'admin';
-
-INSERT INTO admins (username, password_hash)
-VALUES (
-    'admin',
-    'scrypt:32768:8:1$0oWbNA1zxdGf9Dbw$35f0262c06031346ed85eb30d5a40d3c7402be2452f400888d9d6f3952e0cd6e9dd592fb37f350027bfa9ae625a3e10f217329429fc67e573f49804207da374e'
-);
-
-SELECT id, username, password_hash FROM admins WHERE username='admin';
+INSERT INTO productivity (name, role, productivity) VALUES
+('Kishore', 'Azure Cloud Developer', 90),
+('Ravi', 'GCP Architect', 85),
+('Sanjay', 'AWS Associate', 80);
