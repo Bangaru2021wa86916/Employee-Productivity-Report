@@ -11,6 +11,7 @@ services:
       MYSQL_DATABASE: employee_db
     volumes:
       - db_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - emp_net
 
@@ -23,10 +24,10 @@ services:
       - db
     environment:
       - JWT_SECRET_KEY=super-secret-key
-      - DB_HOST=db
-      - DB_USER=root
-      - DB_PASSWORD=password
-      - DB_NAME=employee_db
+      - MYSQL_HOST=db
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=password
+      - MYSQL_DATABASE=employee_db
     ports:
       - "5000:5000"
     networks:
