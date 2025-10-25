@@ -16,8 +16,8 @@ async function login() {
     });
 
     const data = await res.json();
-    if (res.ok && data.access_token) {
-      token = data.access_token;
+    if (res.ok && data.token) {
+      token = data.token;   
       document.getElementById("login-section").style.display = "none";
       document.getElementById("employee-section").style.display = "block";
       loadEmployees();
