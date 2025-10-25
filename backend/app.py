@@ -105,29 +105,6 @@ def check_if_token_in_blacklist(jwt_header, jwt_payload):
     jti = jwt_payload["jti"]
     return jti in blacklisted_tokens
 
-# --- Database connection pool ---
-def get_db_connection():
-    max_retries = 5
-    retry_delay = 2  # seconds
-
-    for attempt in range(max_retries):
-        try:
-            connection = mysql.connector.connect(
-                host="db",
-                user="root",
-                password="password",
-                database="employee_db",
-                auth_plugin='mysql_native_password'  # Explicit auth method
-            )
-            logger.info("Database connection successful")
-            return connection
-        except mysql.connector.Error as err:
-            logger.error(f"Database connection failed (attempt {attempt + 1}/{max_retries}): {err}")
-            if attempt < max_retries - 1:
-                time.sleep(retry_delay)
-            else:
-                raise
-
 # --- Authentication endpoints ---
 @app.route("/login", methods=["POST"])
 @limiter.limit("5 per minute")  # Rate limiting for login attempts
@@ -217,59 +194,6 @@ def logout():
     blacklisted_tokens.add(jti)
     logger.info(f"User logged out successfully. Token blacklisted: {jti}")
     return jsonify({"status": "success", "msg": "Successfully logged out"}), 200
-
-        if not admin:
-            logger.warning(f"Login failed: User {username} not found")
-            return jsonify({
-                "status": "error",
-                "msg": "Invalid username or password"
-            }), 401
-
-        # The stored hash starts with 'scrypt:32768:8:1$', need to verify against that
-        stored_hash = admin["password_hash"]
-        if scrypt.verify(password, stored_hash):
-            # Create token with additional claims
-            access_token = create_access_token(
-                identity=username,
-                additional_claims={"admin_id": admin["id"]}
-            )
-            
-            logger.info(f"Login successful for user: {username}")
-            
-            response = jsonify({
-                "status": "success",
-                "msg": "Login successful",
-                "token": access_token,
-                "username": username
-            })
-            
-            # Set CORS headers
-            response.headers['Access-Control-Allow-Credentials'] = 'true'
-            response.headers['Access-Control-Allow-Origin'] = '*'
-            
-            return response, 200
-        else:
-            logger.warning(f"Login failed: Invalid password for user {username}")
-            return jsonify({
-                "status": "error",
-                "msg": "Invalid username or password"
-            }), 401
-
-    except mysql.connector.Error as db_err:
-        logger.error(f"Database error during login: {str(db_err)}")
-        return jsonify({
-            "status": "error",
-            "msg": "Database error occurred",
-            "error": str(db_err)
-        }), 500
-        
-    except Exception as e:
-        logger.error(f"Unexpected error during login: {str(e)}")
-        return jsonify({
-            "status": "error",
-            "msg": "An unexpected error occurred",
-            "error": str(e)
-        }), 500
 
 # --- Get all employees ---
 @app.route("/employees", methods=["GET"])
