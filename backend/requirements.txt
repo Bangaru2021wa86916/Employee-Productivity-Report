@@ -1,5 +1,4 @@
 flask
-flask-jwt-extended
 flask-cors
 pdfkit
 xhtml2pdf
