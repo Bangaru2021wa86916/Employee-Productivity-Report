@@ -20,3 +20,31 @@ input {
   background-color: #f9f9f9;
   max-width: 400px;
 }
+#report h2 {
+  text-align: center;
+}
+#report p {
+  font-size: 16px;
+}
+#report .label {
+  font-weight: bold;
+} 
+button {
+  margin-top: 10px;
+  padding: 10px 15px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+button:hover {
+  background-color: #45a049;
+} 
+#error-message {
+  color: red;
+  margin-top: 10px;
+} 
+#success-message {
+  color: green;
+  margin-top: 10px;
+}   
