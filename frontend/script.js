@@ -26,6 +26,31 @@ async function login() {
     console.error(err);
   }
 }
+async function addEmployee() {
+  const name = prompt("Enter employee name:");
+  const role = prompt("Enter employee role:");
+  const productivity = parseInt(prompt("Enter productivity (0–100):"));
+  const feedback = prompt("Enter feedback:");
+  const rating = parseFloat(prompt("Enter rating (0–5):"));
+
+  try {
+    const res = await fetch(`${backendURL}/add`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ name, role, productivity, feedback, rating })
+    });
+
+    const data = await res.json();
+    alert(data.msg);
+    loadEmployees(); // reload table
+  } catch (err) {
+    alert("Failed to add employee");
+    console.error(err);
+  }
+}
 
 async function loadEmployees() {
   try {
