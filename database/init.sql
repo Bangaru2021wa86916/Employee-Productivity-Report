@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS employees (
     productivity_score INT
 );
 
-INSERT INTO employees (name, role, productivity_score) VALUES
+INSERT INTO productivity (name, role, productivity_score) VALUES
 ('Alice', 'Azure Cloud Developer', 85),
 ('Bob', 'GCP Architect', 90),
 ('Charlie', 'AWS Associate', 80);
