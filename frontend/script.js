@@ -1,5 +1,5 @@
 // Correct backend endpoint (inside Docker network)
-const backendURL = "http://backend:5000/report"; 
+const backendURL = "http://backend:5000"; 
 
 let token = "";
 
