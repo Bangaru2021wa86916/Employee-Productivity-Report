@@ -1,17 +1,16 @@
 version: "3.9"
 
 services:
-  mysql-db:
+  db:
     image: mysql:5.7
     container_name: mysql-db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: employee_db
-      MYSQL_USER: empuser
-      MYSQL_PASSWORD: emppass
     volumes:
-      - ./database:/docker-entrypoint-initdb.d
+      - db_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "3306:3306"
     networks:
@@ -22,7 +21,13 @@ services:
     container_name: flask-backend
     restart: always
     depends_on:
-      - mysql-db
+      - db
+    environment:
+      - JWT_SECRET_KEY=super-secret-key
+      - MYSQL_HOST=db
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=password
+      - MYSQL_DATABASE=employee_db
     ports:
       - "5000:5000"
     networks:
@@ -41,3 +46,6 @@ services:
 
 networks:
   emp_net:
+
+volumes:
+  db_data:
