@@ -1,20 +1,11 @@
-from flask import Flask, jsonify, request
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required
-from flask_cors import CORS
-from werkzeug.security import check_password_hash
+from flask import Flask, request, jsonify
 import mysql.connector
-import datetime
+from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
 
-# JWT setup
-app.config["JWT_SECRET_KEY"] = "super-secret-key"  # change in production
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = datetime.timedelta(hours=1)
-jwt = JWTManager(app)
-
-# --- Database connection ---
-def get_db_connection():
+def get_connection():
     return mysql.connector.connect(
         host="db",
         user="root",
@@ -22,60 +13,67 @@ def get_db_connection():
         database="employee_db"
     )
 
-# --- Admin Login ---
-@app.route("/login", methods=["POST"])
-def login():
-    data = request.get_json()
-    username = data.get("username")
-    password = data.get("password")
-
-    conn = get_db_connection()
+@app.route('/report', methods=['GET'])
+def get_report():
+    name = request.args.get('name')
+    conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM admins WHERE username = %s", (username,))
-    admin = cursor.fetchone()
+    cursor.execute("SELECT * FROM productivity WHERE name = %s", (name,))
+    result = cursor.fetchall()
     cursor.close()
     conn.close()
+    return jsonify(result)
 
-    if admin and check_password_hash(admin["password_hash"], password):
-        access_token = create_access_token(identity=username)
-        return jsonify({"token": access_token}), 200
-
-    return jsonify({"msg": "Invalid username or password"}), 401
-
-# --- Get all employees ---
-@app.route("/employees", methods=["GET"])
-@jwt_required()
-def get_employees():
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM productivity")
-    employees = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return jsonify(employees), 200
-
-# --- Update employee ---
-@app.route("/employee/<int:emp_id>", methods=["PUT"])
-@jwt_required()
-def update_employee(emp_id):
-    data = request.get_json()
-    name = data.get("name")
-    role = data.get("role")
-    feedback = data.get("feedback")
-    rating = data.get("rating")
-
-    conn = get_db_connection()
+@app.route('/add', methods=['POST'])
+def add_employee():
+    data = request.json
+    conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("""
-        UPDATE productivity
-        SET name=%s, role=%s, feedback=%s, rating=%s
-        WHERE id=%s
-    """, (name, role, feedback, rating, emp_id))
+    cursor.execute(
+        "INSERT INTO productivity (name, role, productivity) VALUES (%s, %s, %s)",
+        (data['name'], data['role'], data['productivity'])
+    )
     conn.commit()
     cursor.close()
     conn.close()
+    return jsonify({'message': 'Employee added successfully'})
 
-    return jsonify({"msg": "Employee updated successfully"}), 200
+@app.route('/delete', methods=['POST'])
+def delete_employee():
+    data = request.json
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM productivity WHERE name = %s", (data['name'],))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return jsonify({'message': 'Employee deleted successfully'})
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+@app.route('/download/csv')
+def download_csv():
+    # Fetch data from database
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT * FROM productivity")
+    rows = cursor.fetchall()
+    
+    # Convert to CSV format
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['Employee ID', 'Name', 'Role', 'Hours Worked', 'Tasks Completed'])  # headers
+    writer.writerows(rows)
+    output.seek(0)
+
+    return Response(output, mimetype="text/csv",
+                    headers={"Content-Disposition": "attachment;filename=productivity_report.csv"})
+
+@app.route('/download/pdf')
+def download_pdf():
+    rendered = render_template("report_template.html", data=rows)
+    pdf = pdfkit.from_string(rendered, False)
+    return Response(pdf, mimetype="application/pdf",
+                    headers={"Content-Disposition": "attachment;filename=productivity_report.pdf"})
+
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
