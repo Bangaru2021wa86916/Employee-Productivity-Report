@@ -1,31 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Employee Productivity Report</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Productivity Report</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <center>
-  <h1>Productivity Report</h1>
-  <input type="text" id="nameInput" placeholder="Enter employee name">
-  <button onclick="getReport()">Get Report</button>
+    <div class="container">
+        <div id="login-section">
+            <h2>Admin Login</h2>
+            <div class="login-form">
+                <input type="text" id="username" placeholder="Username" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button onclick="login()">Login</button>
+            </div>
+        </div>
 
-  <div id="report"></div>
-
-  <h2>Add Employee</h2>
-  <input type="text" id="addName" placeholder="Name">
-  <input type="text" id="addRole" placeholder="Role">
-  <input type="number" id="addProd" placeholder="Productivity %">
-  <button onclick="addEmployee()">Add</button>
-
-  <h2>Delete Employee</h2>
-  <input type="text" id="delName" placeholder="Name">
-  <button onclick="deleteEmployee()">Delete</button>
-
-  <h2><button onclick="window.location.href='/download/csv'">Download CSV</button></h2>
-  <h2><button onclick="window.location.href='/download/pdf'">Download PDF</button></h2>
-
-  <script src="script.js"></script>
-  </center>
+        <div id="employee-section" style="display: none;">
+            <h2>Employee Productivity Report</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Productivity (%)</th>
+                            <th>Rating</th>
+                            <th>Feedback</th>
+                            <th>Last Updated</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="employee-table">
+                        <!-- Employee data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>
