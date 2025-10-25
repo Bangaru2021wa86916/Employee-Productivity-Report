@@ -31,25 +31,37 @@ async function login() {
 }
 
 // --- Load Employees ---
-async function fetchReport() {
-  const res = await fetch("http://backend:5000/report");
-  const data = await res.json();
+async function loadEmployees() {
+  try {
+    const res = await fetch(`${"http://backend:5000/report"}/employees`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    const data = await res.json();
+    const table = document.getElementById("employee-table");
+    table.innerHTML = "";
 
-  const tbody = document.querySelector("#report-table tbody");
-  tbody.innerHTML = "";
-
-  data.forEach(emp => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${emp.id}</td>
-      <td>${emp.name}</td>
-      <td>${emp.role}</td>
-      <td>${emp.productivity_score}</td>
-    `;
-    tbody.appendChild(row);
-  });
+    data.employees.forEach(emp => {
+      table.innerHTML += `
+        <tr>
+          <td>${emp.id}</td>
+          <td><input value="${emp.name}" id="name-${emp.id}"></td>
+          <td><input value="${emp.role}" id="role-${emp.id}"></td>
+          <td>${emp.productivity}%</td>
+          <td>${emp.rating || '-'}</td>
+          <td><textarea id="feedback-${emp.id}">${emp.feedback || ''}</textarea></td>
+          <td>${emp.last_updated}</td>
+          <td>
+            <button class="save-btn" onclick="updateEmployee(${emp.id})">Save</button>
+            <button class="delete-btn" onclick="deleteEmployee(${emp.id})">Delete</button>
+          </td>
+        </tr>
+      `;
+    });
+  } catch (err) {
+    console.error("Error loading employees:", err);
+    alert("Failed to fetch employee data");
+  }
 }
-
 
 // --- Add Employee ---
 async function addEmployee() {
