@@ -1,5 +1,5 @@
 // Correct backend endpoint (inside Docker network)
-const backendURL = "http://backend:5000"; 
+const backendURL = "http://localhost:5000"; 
 
 let token = "";
 
@@ -9,7 +9,7 @@ async function login() {
   const password = document.getElementById("password").value;
 
   try {
-    const res = await fetch(`${"http://backend:5000"}/login`, {
+    const res = await fetch(`${"http://localhost:5000"}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password })
@@ -33,7 +33,7 @@ async function login() {
 // --- Load Employees ---
 async function loadEmployees() {
   try {
-    const res = await fetch(`${"http://backend:5000"}/employees`, {
+    const res = await fetch(`${"http://localhost:5000"}/employees`, {
       headers: { "Authorization": `Bearer ${token}` }
     });
     const data = await res.json();
@@ -70,7 +70,7 @@ async function addEmployee() {
   const productivity = parseFloat(document.getElementById("addProd").value);
 
   try {
-    const res = await fetch(`${"http://backend:5000"}/add`, {
+    const res = await fetch(`${"http://localhost:5000"}/add`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -96,7 +96,7 @@ async function updateEmployee(id) {
   const rating = parseFloat(prompt("Enter rating (0–5):"));
 
   try {
-    const res = await fetch(`${"http://backend:5000"}/employee/${id}`, {
+    const res = await fetch(`${"http://localhost:5000"}/employee/${id}`, {
       method: "PUT",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -119,7 +119,7 @@ async function deleteEmployee(id) {
   if (!confirm("Are you sure you want to delete this employee?")) return;
 
   try {
-    const res = await fetch(`${"http://backend:5000"}/employee/${id}`, {
+    const res = await fetch(`${"http://localhost:5000"}/employee/${id}`, {
       method: "DELETE",
       headers: { "Authorization": `Bearer ${token}` }
     });
