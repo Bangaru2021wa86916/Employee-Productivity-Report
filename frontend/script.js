@@ -9,7 +9,7 @@ async function login() {
   const password = document.getElementById("password").value;
 
   try {
-    const res = await fetch(`${backendURL}/login`, {
+    const res = await fetch(`${"http://backend:5000/report"}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password })
@@ -70,7 +70,7 @@ async function addEmployee() {
   const productivity = parseFloat(document.getElementById("addProd").value);
 
   try {
-    const res = await fetch(`${backendURL}/add`, {
+    const res = await fetch(`${"http://backend:5000/report"}/add`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -96,7 +96,7 @@ async function updateEmployee(id) {
   const rating = parseFloat(prompt("Enter rating (0–5):"));
 
   try {
-    const res = await fetch(`${backendURL}/employee/${id}`, {
+    const res = await fetch(`${"http://backend:5000/report"}/employee/${id}`, {
       method: "PUT",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -119,7 +119,7 @@ async function deleteEmployee(id) {
   if (!confirm("Are you sure you want to delete this employee?")) return;
 
   try {
-    const res = await fetch(`${backendURL}/employee/${id}`, {
+    const res = await fetch(`${"http://backend:5000/report"}/employee/${id}`, {
       method: "DELETE",
       headers: { "Authorization": `Bearer ${token}` }
     });
