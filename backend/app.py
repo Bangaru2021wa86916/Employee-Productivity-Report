@@ -25,11 +25,10 @@ CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 # Initialize rate limiter
 limiter = Limiter(
-    app=app,
     key_func=get_remote_address,
     default_limits=["200 per day", "50 per hour"]
 )
-
+limiter.init_app(app)
 # Database configuration
 db_config = {
     'host': os.getenv('MYSQL_HOST', 'db'),
