@@ -1,12 +1,19 @@
 from flask import Flask, jsonify, request, make_response
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import (
+    JWTManager, create_access_token, jwt_required,
+    get_jwt_identity, get_jwt
+)
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from passlib.hash import scrypt
 import mysql.connector
+from mysql.connector import pooling
 import datetime
 import logging
 import time
 import os
+from functools import wraps
 
 # Configure logging
 logging.basicConfig(
@@ -19,37 +26,86 @@ app = Flask(__name__)
 # Enable CORS for all routes and origins
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
-@app.route('/')
-def health_check():
+# Initialize rate limiter
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"]
+)
+
+# Database configuration
+db_config = {
+    'host': os.getenv('MYSQL_HOST', 'db'),
+    'user': os.getenv('MYSQL_USER', 'root'),
+    'password': os.getenv('MYSQL_PASSWORD', 'password'),
+    'database': os.getenv('MYSQL_DATABASE', 'employee_db'),
+    'auth_plugin': 'mysql_native_password',
+    'pool_name': 'mypool',
+    'pool_size': 5
+}
+
+# Create connection pool
+try:
+    connection_pool = mysql.connector.pooling.MySQLConnectionPool(**db_config)
+    logger.info("Database connection pool created successfully")
+except mysql.connector.Error as err:
+    logger.error(f"Failed to create connection pool: {err}")
+    raise
+
+def get_db_connection():
     try:
-        # Try to connect to the database
-        conn = get_db_connection()
+        return connection_pool.get_connection()
+    except mysql.connector.Error as err:
+        logger.error(f"Error getting connection from pool: {err}")
+        raise
+
+def handle_db_error(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except mysql.connector.Error as err:
+            logger.error(f"Database error in {func.__name__}: {err}")
+            return jsonify({
+                "status": "error",
+                "msg": "Database error occurred",
+                "error": str(err)
+            }), 500
+    return wrapper
+
+@app.route('/')
+@handle_db_error
+def health_check():
+    conn = get_db_connection()
+    try:
         cursor = conn.cursor()
         cursor.execute('SELECT 1')
         cursor.close()
-        conn.close()
         return jsonify({
             "status": "healthy",
             "database": "connected",
             "timestamp": datetime.datetime.now().isoformat()
         }), 200
-    except Exception as e:
-        logger.error(f"Health check failed: {str(e)}")
-        return jsonify({
-            "status": "unhealthy",
-            "database": "disconnected",
-            "error": str(e),
-            "timestamp": datetime.datetime.now().isoformat()
-        }), 500
+    finally:
+        conn.close()
 
 # JWT setup with longer expiration
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "super-secret-key")  # Load from environment
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = datetime.timedelta(hours=24)  # Extended for testing
 app.config["JWT_TOKEN_LOCATION"] = ["headers"]
 app.config["JWT_ERROR_MESSAGE_KEY"] = "msg"  # Consistent error message key
-jwt = JWTManager(app)
+app.config["JWT_BLACKLIST_ENABLED"] = True
+app.config["JWT_BLACKLIST_TOKEN_CHECKS"] = ["access"]
 
-# --- Database connection with retry logic ---
+jwt = JWTManager(app)
+blacklisted_tokens = set()
+
+@jwt.token_in_blocklist_loader
+def check_if_token_in_blacklist(jwt_header, jwt_payload):
+    jti = jwt_payload["jti"]
+    return jti in blacklisted_tokens
+
+# --- Database connection pool ---
 def get_db_connection():
     max_retries = 5
     retry_delay = 2  # seconds
@@ -72,36 +128,95 @@ def get_db_connection():
             else:
                 raise
 
-# --- Admin Login ---
+# --- Authentication endpoints ---
 @app.route("/login", methods=["POST"])
+@limiter.limit("5 per minute")  # Rate limiting for login attempts
+@handle_db_error
 def login():
+    data = request.get_json()
+    if not data:
+        logger.error("No JSON data received in login request")
+        return jsonify({"status": "error", "msg": "Missing JSON data"}), 400
+
+    username = data.get("username")
+    password = data.get("password")
+    
+    if not username or not password:
+        logger.error("Missing username or password in login request")
+        return jsonify({"status": "error", "msg": "Username and password are required"}), 400
+
+    # Check if username contains only valid characters
+    if not username.isalnum():
+        return jsonify({"status": "error", "msg": "Invalid username format"}), 400
+
+    logger.info(f"Login attempt for user: {username}")
+    
+    conn = None
     try:
-        data = request.get_json()
-        if not data:
-            logger.error("No JSON data received in login request")
-            return jsonify({"status": "error", "msg": "Missing JSON data"}), 400
-
-        username = data.get("username")
-        password = data.get("password")
-        
-        if not username or not password:
-            logger.error("Missing username or password in login request")
-            return jsonify({"status": "error", "msg": "Username and password are required"}), 400
-
-        logger.info(f"Login attempt for user: {username}")
-        
         conn = get_db_connection()
-        try:
-            with conn.cursor(dictionary=True) as cursor:
-                # Check if admin exists and get password hash
-                cursor.execute("""
-                    SELECT id, username, password_hash 
-                    FROM admins 
-                    WHERE username = %s
-                """, (username,))
-                admin = cursor.fetchone()
-        finally:
+        cursor = conn.cursor(dictionary=True)
+        
+        # Check if admin exists and get password hash
+        cursor.execute("""
+            SELECT id, username, password_hash 
+            FROM admins 
+            WHERE username = %s
+        """, (username,))
+        admin = cursor.fetchone()
+        
+        if not admin:
+            logger.warning(f"Login failed: User {username} not found")
+            return jsonify({
+                "status": "error",
+                "msg": "Invalid username or password"
+            }), 401
+
+        # Verify password
+        stored_hash = admin["password_hash"]
+        if not scrypt.verify(password, stored_hash):
+            logger.warning(f"Login failed: Invalid password for user {username}")
+            return jsonify({
+                "status": "error",
+                "msg": "Invalid username or password"
+            }), 401
+
+        # Create token with additional claims
+        access_token = create_access_token(
+            identity=username,
+            additional_claims={"admin_id": admin["id"]}
+        )
+        
+        logger.info(f"Login successful for user: {username}")
+        
+        response = jsonify({
+            "status": "success",
+            "msg": "Login successful",
+            "token": access_token,
+            "username": username
+        })
+        
+        # Set CORS headers
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        
+        return response, 200
+    except Exception as e:
+        logger.error(f"Unexpected error during login: {str(e)}")
+        return jsonify({
+            "status": "error",
+            "msg": "An unexpected error occurred"
+        }), 500
+    finally:
+        if conn:
             conn.close()
+
+@app.route("/logout", methods=["POST"])
+@jwt_required()
+def logout():
+    jti = get_jwt()["jti"]
+    blacklisted_tokens.add(jti)
+    logger.info(f"User logged out successfully. Token blacklisted: {jti}")
+    return jsonify({"status": "success", "msg": "Successfully logged out"}), 200
 
         if not admin:
             logger.warning(f"Login failed: User {username} not found")
