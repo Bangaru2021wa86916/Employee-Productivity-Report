@@ -3,3 +3,6 @@ flask-cors
 pdfkit
 xhtml2pdf
 mysql-connector-python
+passlib
+Werkzeug
+PyJWT       
