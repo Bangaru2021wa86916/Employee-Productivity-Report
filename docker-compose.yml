@@ -1,6 +1,7 @@
 version: "3.9"
 
 services:
+  # Database Service
   db:
     image: mysql:5.7
     container_name: mysql-db
@@ -13,22 +14,28 @@ services:
     networks:
       - emp_net
 
+  # Backend Flask Service
   backend:
     build: ./backend
-    container_name: backend
+    container_name: flask-backend
     restart: always
     depends_on:
       - db
     environment:
       - JWT_SECRET_KEY=super-secret-key
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=password
+      - DB_NAME=employee_db
     ports:
       - "5000:5000"
     networks:
       - emp_net
 
+  # Frontend Nginx Service
   frontend:
     build: ./frontend
-    container_name: frontend
+    container_name: nginx-frontend
     restart: always
     depends_on:
       - backend
