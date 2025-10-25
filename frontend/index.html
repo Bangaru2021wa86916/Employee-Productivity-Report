@@ -8,6 +8,7 @@
 </head>
 <body>
     <div class="container">
+        <!-- Login Section -->
         <div id="login-section">
             <h2>Admin Login</h2>
             <div class="login-form">
@@ -17,8 +18,22 @@
             </div>
         </div>
 
+        <!-- Employee Section -->
         <div id="employee-section" style="display: none;">
             <h2>Employee Productivity Report</h2>
+
+            <div class="actions">
+                <button onclick="loadEmployees()">Load Employees</button>
+                <button onclick="showAddForm()">Add Employee</button>
+            </div>
+
+            <div id="add-form" style="display:none;">
+                <input type="text" id="addName" placeholder="Name">
+                <input type="text" id="addRole" placeholder="Role">
+                <input type="number" id="addProd" placeholder="Productivity %">
+                <button onclick="addEmployee()">Save</button>
+            </div>
+
             <div class="table-container">
                 <table>
                     <thead>
@@ -33,13 +48,12 @@
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="employee-table">
-                        <!-- Employee data will be populated here -->
-                    </tbody>
+                    <tbody id="employee-table"></tbody>
                 </table>
             </div>
         </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
