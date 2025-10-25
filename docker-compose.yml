@@ -1,7 +1,6 @@
 version: "3.9"
 
 services:
-  # Database Service
   db:
     image: mysql:5.7
     container_name: mysql-db
@@ -15,7 +14,6 @@ services:
     networks:
       - emp_net
 
-  # Backend Flask Service
   backend:
     build: ./backend
     container_name: flask-backend
@@ -33,7 +31,6 @@ services:
     networks:
       - emp_net
 
-  # Frontend Nginx Service
   frontend:
     build: ./frontend
     container_name: nginx-frontend
