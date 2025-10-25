@@ -1,14 +1,18 @@
 CREATE DATABASE IF NOT EXISTS employee_db;
 USE employee_db;
 
-CREATE TABLE IF NOT EXISTS employees (
+CREATE TABLE IF NOT EXISTS productivity (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100),
     role VARCHAR(100),
-    productivity_score INT
+    productivity INT,
+    feedback TEXT,
+    rating FLOAT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-INSERT INTO productivity (name, role, productivity_score) VALUES
+INSERT INTO productivity (name, role, productivity) VALUES
 ('Alice', 'Azure Cloud Developer', 85),
 ('Bob', 'GCP Architect', 90),
 ('Charlie', 'AWS Associate', 80);
@@ -19,8 +23,6 @@ CREATE TABLE IF NOT EXISTS admins (
     password_hash VARCHAR(255)
 );
 
+-- password = admin123 (pbkdf2_sha256)
 INSERT INTO admins (username, password_hash)
-VALUES ('admin', '$pbkdf2:sha256:260000$BEnm0e7aW9dx4UuG$7b7813a539c0da4b2324dbdbd3e3eb16e32cdd1b5c02a3b14c2e58b07848b7a9');
-GRANT ALL PRIVILEGES ON employee_db.* TO 'root'@'%';
-FLUSH PRIVILEGES;   
--- End of file
+VALUES ('admin', '$pbkdf2-sha256$29000$3ZJ/91hKeWekCk2zW1upGA$VWR7oxM0wC3ZcdCzY4LZY2wRLrKFKMou7dASzT2Lj98');
