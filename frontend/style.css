@@ -6,7 +6,7 @@
 }
 
 body {
-    background-image: url("emp.png");
+    background-image: url('emp.png');
     background-repeat: no-repeat;
     background-position: right top;
     background-attachment: fixed;
