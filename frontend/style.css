@@ -359,3 +359,103 @@ td input[type="number"] {
     background: linear-gradient(135deg, #ffcd39, #d39e00);
     transform: translateY(-2px);
 }
+/* =============================
+   ✨ Modern Admin Login Styling
+   ============================= */
+#login-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 90vh;
+    background: transparent;
+}
+
+.login-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    padding: 3rem 3.5rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    position: relative;
+    overflow: hidden;
+}
+
+.login-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    padding: 2px;
+    background: linear-gradient(135deg, #00c6ff, #0072ff);
+    -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+}
+
+.login-title {
+    font-size: 1.8rem;
+    color: #2c3e50;
+    font-weight: 700;
+    margin-bottom: 2rem;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.login-form input {
+    padding: 0.9rem 1.1rem;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.login-form input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 6px rgba(0, 123, 255, 0.5);
+    outline: none;
+}
+
+.login-btn {
+    background: linear-gradient(135deg, #007bff, #00c6ff);
+    border: none;
+    padding: 0.9rem;
+    border-radius: 8px;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+.login-btn:hover {
+    background: linear-gradient(135deg, #339af0, #0072ff);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0, 123, 255, 0.4);
+}
+
+.login-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 3px 8px rgba(0, 123, 255, 0.3);
+}
+
+@media (max-width: 480px) {
+    .login-card {
+        padding: 2rem;
+    }
+    .login-title {
+        font-size: 1.5rem;
+    }
+}
