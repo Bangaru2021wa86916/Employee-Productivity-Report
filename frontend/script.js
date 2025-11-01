@@ -1,128 +1,108 @@
 const backendURL = "http://localhost:5000";
 let token = "";
 
-// LOGIN
 async function login() {
   const username = document.getElementById("username").value;
   const password = document.getElementById("password").value;
 
-  const res = await fetch(`${backendURL}/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password }),
-  });
-
-  const data = await res.json();
-  if (res.ok) {
-    token = data.access_token;
-    document.getElementById("login-section").style.display = "none";
-    document.getElementById("employee-section").style.display = "block";
-    loadEmployees();
-  } else {
-    alert(data.msg || "Login failed");
-  }
-}
-
-// LOAD EMPLOYEES
-async function loadEmployees() {
-  const res = await fetch(`${backendURL}/employees`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const data = await res.json();
-  const tbody = document.querySelector("#employee-table tbody");
-  tbody.innerHTML = "";
-
-  if (data.employees) {
-    data.employees.forEach((emp) => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${emp.id}</td>
-        <td>${emp.name}</td>
-        <td>${emp.role}</td>
-        <td>${emp.productivity}%</td>
-        <td>${emp.rating}</td>
-        <td>${emp.feedback}</td>
-        <td>${emp.updated_at || ""}</td>
-      `;
-      tbody.appendChild(row);
+  try {
+    const res = await fetch(`${backendURL}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
     });
+
+    const data = await res.json();
+    if (res.ok && data.token) {
+      token = data.token;
+      document.getElementById("login-section").style.display = "none";
+      document.getElementById("employee-section").style.display = "block";
+      loadEmployees();
+    } else {
+      alert(data.msg || "Login failed");
+    }
+  } catch (err) {
+    alert("Error connecting to backend");
+    console.error(err);
+  }
+}
+async function addEmployee() {
+  const name = prompt("Enter employee name:");
+  const role = prompt("Enter employee role:");
+  const productivity = parseInt(prompt("Enter productivity (0–100):"));
+  const feedback = prompt("Enter feedback:");
+  const rating = parseFloat(prompt("Enter rating (0–5):"));
+
+  try {
+    const res = await fetch(`${backendURL}/add`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ name, role, productivity, feedback, rating })
+    });
+
+    const data = await res.json();
+    alert(data.msg);
+    loadEmployees(); // reload table
+  } catch (err) {
+    alert("Failed to add employee");
+    console.error(err);
   }
 }
 
-// ADD EMPLOYEE (example only)
-function addEmployee() {
-  alert("Add employee feature not implemented in this example.");
+async function loadEmployees() {
+  try {
+    const res = await fetch(`${backendURL}/employees`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    const data = await res.json();
+
+    const table = document.getElementById("employee-table");
+    table.innerHTML = "";
+
+    data.employees.forEach(emp => {
+      table.innerHTML += `
+        <tr>
+          <td>${emp.id}</td>
+          <td><input value="${emp.name}" id="name-${emp.id}"></td>
+          <td><input value="${emp.role}" id="role-${emp.id}"></td>
+          <td>${emp.productivity}%</td>
+          <td>${emp.rating || '-'}</td>
+          <td><textarea id="feedback-${emp.id}">${emp.feedback || ''}</textarea></td>
+          <td>${emp.updated_at}</td>
+          <td><button onclick="updateEmployee(${emp.id})">Save</button></td>
+        </tr>
+      `;
+    });
+  } catch (err) {
+    alert("Failed to load employees");
+    console.error(err);
+  }
 }
 
-// DELETE EMPLOYEE
-async function deleteEmployee() {
-  const name = document.getElementById("deleteName").value.trim();
-  if (!name) return alert("Enter employee name to delete");
+async function updateEmployee(id) {
+  const name = document.getElementById(`name-${id}`).value;
+  const role = document.getElementById(`role-${id}`).value;
+  const feedback = document.getElementById(`feedback-${id}`).value;
+  const rating = parseFloat(prompt("Enter rating (0–5):"));
 
-  if (!confirm(`Delete employee: ${name}?`)) return;
+  try {
+    const res = await fetch(`${backendURL}/employee/${id}`, {
+      method: "PUT",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ name, role, feedback, rating })
+    });
 
-  const res = await fetch(`${backendURL}/employee?name=${encodeURIComponent(name)}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const data = await res.json();
-  if (res.ok) {
+    const data = await res.json();
     alert(data.msg);
     loadEmployees();
-  } else {
-    alert(data.msg || "Delete failed");
+  } catch (err) {
+    alert("Update failed");
+    console.error(err);
   }
-}
-
-// LOGOUT
-async function logout() {
-  const res = await fetch(`${backendURL}/logout`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (res.ok) {
-    token = "";
-    document.getElementById("login-section").style.display = "block";
-    document.getElementById("employee-section").style.display = "none";
-    alert("Logged out successfully");
-  } else {
-    alert("Logout failed");
-  }
-}
-
-// DOWNLOAD CSV
-function downloadCSV() {
-  const rows = [["ID", "Name", "Role", "Productivity", "Rating", "Feedback", "Last Updated"]];
-  const table = document.querySelectorAll("#employee-table tr");
-  for (const tr of table) {
-    const cells = Array.from(tr.children).map((td) => td.innerText);
-    if (cells.length === 7) rows.push(cells);
-  }
-  const csv = rows.map((r) => r.join(",")).join("\n");
-  const blob = new Blob([csv], { type: "text/csv" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "employee_report.csv";
-  a.click();
-}
-
-// DOWNLOAD PDF
-function downloadPDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  doc.text("Employee Productivity Report", 14, 14);
-
-  let y = 24;
-  const rows = document.querySelectorAll("#employee-table tr");
-  rows.forEach((r) => {
-    const text = Array.from(r.children).map((td) => td.innerText).join(" | ");
-    doc.text(text, 10, y);
-    y += 8;
-    if (y > 280) {
-      doc.addPage();
-      y = 20;
-    }
-  });
-
-  doc.save("employee_report.pdf");
 }
