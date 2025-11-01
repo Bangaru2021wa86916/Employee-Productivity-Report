@@ -23,7 +23,7 @@ body {
 
 
 .container {
-    max-width: 1800px;
+    max-width: 1600px;
     margin: 2rem auto;
     padding: 0 1rem;
 }
@@ -67,7 +67,7 @@ h2 {
 
 /* Table Styles */
 .table-container {
-    background: white;
+    background: 0 4px 6px rgba(0, 0, 0, 0.1);;
     padding: 1.5rem;
     border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -76,7 +76,7 @@ h2 {
 }
 
 table {
-    width: 100%;
+    width: 130%;
     border-collapse: separate;
     border-spacing: 0;
     margin: 1rem 0;
