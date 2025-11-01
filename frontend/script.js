@@ -300,29 +300,39 @@ function openFeedbackTab(empId) {
       </div>
 
       <script>
-        function saveFeedback() {
-          const updatedFeedback = document.getElementById('feedbackEdit').value;
+        async function saveFeedback() {
+    const feedback = document.getElementById("feedback").value.trim();
+    const employeeId = localStorage.getItem("employee_id"); // or from a dropdown/input
+    const projectId = localStorage.getItem("project_id");   // or from context
 
-          // Save to backend
-          fetch('${backendURL}/employee/${empId}', {
-            method: 'PUT',
-            headers: {
-              'Authorization': 'Bearer ${token}',
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ feedback: updatedFeedback })
-          })
-          .then(res => res.json())
-          .then(data => {
-            alert(data.msg || 'Feedback updated');
-            // Optionally close tab after save
-            window.close();
-          })
-          .catch(err => {
-            alert('Failed to update feedback');
-            console.error(err);
-          });
-        }
+    if (!feedback || !employeeId || !projectId) {
+        alert("Please fill all required fields before submitting.");
+        return;
+    }
+
+    const token = localStorage.getItem("token");
+
+    const response = await fetch("http://localhost:5000/feedback", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({
+            feedback: feedback,
+            employee_id: employeeId,
+            project_id: projectId
+        })
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+        alert("Feedback saved successfully!");
+    } else {
+        alert(data.msg || "Error saving feedback.");
+    }
+}
+
       </script>
     </body>
     </html>
