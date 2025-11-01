@@ -27,10 +27,7 @@ def login():
     password = data.get("password")
 
     if username == "admin" and password == "admin123":
-        access_token = create_access_token(
-            identity={"username": username},
-            expires_delta=datetime.timedelta(hours=1)
-        )
+        access_token = create_access_token(identity={"username": username})
         return jsonify(access_token=access_token), 200
     else:
         return jsonify({"msg": "Invalid credentials"}), 401
