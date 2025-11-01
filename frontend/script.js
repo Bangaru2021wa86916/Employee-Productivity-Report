@@ -218,11 +218,13 @@ function togglePassword() {
 
     if (passwordField.type === "password") {
         passwordField.type = "text";
-        toggleIcon.textContent = "🙈";
-        toggleIcon.style.transform = "rotate(-15deg)";
+        toggleIcon.textContent = "🧑‍💻";
+        toggleIcon.style.color = "#007bff";
+        toggleIcon.style.transform = "rotate(10deg)";
     } else {
         passwordField.type = "password";
         toggleIcon.textContent = "👁️";
+        toggleIcon.style.color = "#555";
         toggleIcon.style.transform = "rotate(0deg)";
     }
 }
