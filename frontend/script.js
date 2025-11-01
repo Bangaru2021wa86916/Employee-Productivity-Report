@@ -212,3 +212,17 @@ async function logout() {
     document.getElementById("login-section").style.display = "block";
   }
 }
+function togglePassword() {
+    const passwordField = document.getElementById("password");
+    const toggleIcon = document.querySelector(".toggle-password");
+
+    if (passwordField.type === "password") {
+        passwordField.type = "text";
+        toggleIcon.textContent = "🙈";
+        toggleIcon.style.transform = "rotate(-15deg)";
+    } else {
+        passwordField.type = "password";
+        toggleIcon.textContent = "👁️";
+        toggleIcon.style.transform = "rotate(0deg)";
+    }
+}

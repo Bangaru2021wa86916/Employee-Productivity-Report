@@ -24,7 +24,11 @@
                 <h2 class="login-title">👨‍💼 Admin Login</h2>
                     <div class="login-form">
                         <input type="text" id="username" class="form-input" placeholder="Enter Username" required>
-                        <input type="password" id="password" class="form-input" placeholder="Enter Password" required>
+                        <div class="password-wrapper">
+                            <input type="password" id="password" class="form-input" placeholder="Enter Password" required>
+                                <span class="toggle-password" onclick="togglePassword()">👁️</span>
+                        </div>
+
                         <button class="login-btn" onclick="login()">Login</button>
                     </div>
             </div>

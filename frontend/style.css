@@ -459,3 +459,28 @@ td input[type="number"] {
         font-size: 1.5rem;
     }
 }
+/* Password Field Wrapper */
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-wrapper input {
+    width: 100%;
+    padding-right: 2.5rem;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: transform 0.2s ease, color 0.2s ease;
+    user-select: none;
+}
+
+.toggle-password:hover {
+    color: #007bff;
+    transform: scale(1.15);
+}
