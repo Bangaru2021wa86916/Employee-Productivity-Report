@@ -232,15 +232,15 @@ function togglePassword() {
 }
 
 function openFeedbackTab(empId) {
-  // Get feedback text from main table
+  // Get feedback text and employee info
   const feedbackText = document.getElementById(`feedback-${empId}`).value;
   const empName = document.getElementById(`name-${empId}`).value;
   const empRole = document.getElementById(`role-${empId}`).value;
 
-  // Open new tab (same origin)
+  // Open a new blank tab
   const feedbackWindow = window.open("", "_blank");
 
-  // Write editable feedback view
+  // Write new tab content
   feedbackWindow.document.write(`
     <!DOCTYPE html>
     <html lang="en">
@@ -248,7 +248,6 @@ function openFeedbackTab(empId) {
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Feedback - ${empName}</title>
-      <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👨‍💼</text></svg>">
       <style>
         body {
           font-family: 'Segoe UI', Arial, sans-serif;
@@ -300,41 +299,55 @@ function openFeedbackTab(empId) {
       </div>
 
       <script>
-        async function saveFeedback() {
-    const feedback = document.getElementById("feedback").value.trim();
-    const employeeId = localStorage.getItem("employee_id"); // or from a dropdown/input
-    const projectId = localStorage.getItem("project_id");   // or from context
+        const backendURL = '${backendURL}';
+        const token = '${token}';
 
-    if (!feedback || !employeeId || !projectId) {
-        alert("Please fill all required fields before submitting.");
-        return;
-    }
+        function saveFeedback() {
+          const updatedFeedback = document.getElementById('feedbackEdit').value;
 
-    const token = localStorage.getItem("token");
+          fetch(\`\${backendURL}/employee/${empId}\`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': 'Bearer ' + token,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ feedback: updatedFeedback })
+          })
+          .then(res => res.json())
+          .then(data => {
+            alert(data.msg || 'Feedback updated successfully');
 
-    const response = await fetch("http://localhost:5000/feedback", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + token
-        },
-        body: JSON.stringify({
-            feedback: feedback,
-            employee_id: employeeId,
-            project_id: projectId
-        })
-    });
+            // 🔥 Send message to parent window for auto-sync
+            window.opener.postMessage({
+              type: 'feedbackUpdated',
+              empId: ${empId},
+              feedback: updatedFeedback
+            }, '*');
 
-    const data = await response.json();
-    if (response.ok) {
-        alert("Feedback saved successfully!");
-    } else {
-        alert(data.msg || "Error saving feedback.");
-    }
-}
-
+            // Close tab after short delay
+            setTimeout(() => window.close(), 800);
+          })
+          .catch(err => {
+            alert('Failed to update feedback');
+            console.error(err);
+          });
+        }
       </script>
     </body>
     </html>
   `);
 }
+
+// 🧩 Listen for feedback updates from the feedback tab
+window.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "feedbackUpdated") {
+    const { empId, feedback } = event.data;
+    const feedbackField = document.getElementById(`feedback-${empId}`);
+    if (feedbackField) {
+      feedbackField.value = feedback;
+      // Optional visual confirmation
+      feedbackField.style.backgroundColor = "#d4edda"; // light green flash
+      setTimeout(() => feedbackField.style.backgroundColor = "", 1200);
+    }
+  }
+});
