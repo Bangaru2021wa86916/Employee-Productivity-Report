@@ -23,11 +23,11 @@ services:
     depends_on:
       - db
     environment:
-       - JWT_SECRET_KEY=my_super_secret_key_98765
-       - DB_HOST=db
-       - DB_USER=root
-       - DB_PASSWORD=root
-       - DB_NAME=employee_db
+      - JWT_SECRET_KEY=super-secret-key
+      - MYSQL_HOST=db
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=password
+      - MYSQL_DATABASE=employee_db
     ports:
       - "5000:5000"
     networks:
