@@ -53,7 +53,7 @@ async function addEmployee() {
   }
 }
 
-async function deleteEmployee() {
+async function loadEmployees() {
   try {
     const res = await fetch(`${backendURL}/employees`, {
       headers: { "Authorization": `Bearer ${token}` }
