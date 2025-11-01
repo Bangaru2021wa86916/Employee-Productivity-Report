@@ -95,9 +95,9 @@ async function loadEmployees() {
             <textarea id="feedback-${emp.id}" onclick="openFeedbackTab(${emp.id})" readonly>${emp.feedback || ''}</textarea>
           </td>
           <td>${emp.updated_at}</td>
-          <td>
-            <button onclick="updateEmployee(${emp.id})">Save</button>
-            <button style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;" onclick="deleteEmployee(${emp.id})">Delete</button>
+          <td style="text-align:center;">
+              <button class="feedback-btn" onclick="openFeedbackTab(${emp.id})" title="View / Edit Feedback">💬</button>
+                <span id="feedback-status-${emp.id}" class="feedback-status">${emp.feedback ? '🟢' : '⚪'}</span>
           </td>
         </tr>
       `;
