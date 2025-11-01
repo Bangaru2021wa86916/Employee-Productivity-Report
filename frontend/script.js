@@ -175,3 +175,21 @@ async function downloadCSV() {
   }
 }
 
+async function logout() {
+  if (!confirm("Are you sure you want to logout?")) return;
+  try {
+    const res = await fetch(`${backendURL}/logout`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    const data = await res.json();
+    alert(data.msg || "Logged out successfully");
+    token = "";
+    document.getElementById("employee-section").style.display = "none";
+    document.getElementById("login-section").style.display = "block";
+  } catch (err) {
+    alert("Error logging out");
+    console.error(err);
+  }
+}
+
