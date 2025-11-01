@@ -1,5 +1,14 @@
 const backendURL = "http://localhost:5000";
-let token = "";
+let token = localStorage.getItem("token") || "";
+
+// Auto-login if token exists
+window.onload = () => {
+  if (token) {
+    document.getElementById("login-section").style.display = "none";
+    document.getElementById("employee-section").style.display = "block";
+    loadEmployees();
+  }
+};
 
 async function login() {
   const username = document.getElementById("username").value;
@@ -15,6 +24,7 @@ async function login() {
     const data = await res.json();
     if (res.ok && data.token) {
       token = data.token;
+      localStorage.setItem("token", token); // ✅ store token
       document.getElementById("login-section").style.display = "none";
       document.getElementById("employee-section").style.display = "block";
       loadEmployees();
@@ -58,29 +68,38 @@ async function loadEmployees() {
     const res = await fetch(`${backendURL}/employees`, {
       headers: { "Authorization": `Bearer ${token}` }
     });
-    const data = await res.json();
 
+    if (res.status === 401) {
+      // token expired or invalid
+      localStorage.removeItem("token");
+      token = "";
+      document.getElementById("employee-section").style.display = "none";
+      document.getElementById("login-section").style.display = "block";
+      alert("Session expired. Please login again.");
+      return;
+    }
+
+    const data = await res.json();
     const table = document.getElementById("employee-table");
     table.innerHTML = "";
 
     data.employees.forEach(emp => {
-  table.innerHTML += `
-    <tr>
-      <td>${emp.id}</td>
-      <td><input value="${emp.name}" id="name-${emp.id}"></td>
-      <td><input value="${emp.role}" id="role-${emp.id}"></td>
-      <td>${emp.productivity}%</td>
-      <td>${emp.rating || '-'}</td>
-      <td><textarea id="feedback-${emp.id}">${emp.feedback || ''}</textarea></td>
-      <td>${emp.updated_at}</td>
-      <td>
-        <button onclick="updateEmployee(${emp.id})">Save</button>
-        <button style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;" onclick="deleteEmployee(${emp.id})">Delete</button>
-      </td>
-    </tr>
-  `;
-});
-
+      table.innerHTML += `
+        <tr>
+          <td>${emp.id}</td>
+          <td><input value="${emp.name}" id="name-${emp.id}"></td>
+          <td><input value="${emp.role}" id="role-${emp.id}"></td>
+          <td>${emp.productivity}%</td>
+          <td>${emp.rating || '-'}</td>
+          <td><textarea id="feedback-${emp.id}">${emp.feedback || ''}</textarea></td>
+          <td>${emp.updated_at}</td>
+          <td>
+            <button onclick="updateEmployee(${emp.id})">Save</button>
+            <button style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;" onclick="deleteEmployee(${emp.id})">Delete</button>
+          </td>
+        </tr>
+      `;
+    });
   } catch (err) {
     alert("Failed to load employees");
     console.error(err);
@@ -184,12 +203,12 @@ async function logout() {
     });
     const data = await res.json();
     alert(data.msg || "Logged out successfully");
+  } catch (err) {
+    console.error(err);
+  } finally {
+    localStorage.removeItem("token");
     token = "";
     document.getElementById("employee-section").style.display = "none";
     document.getElementById("login-section").style.display = "block";
-  } catch (err) {
-    alert("Error logging out");
-    console.error(err);
   }
 }
-
