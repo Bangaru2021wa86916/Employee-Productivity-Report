@@ -91,7 +91,9 @@ async function loadEmployees() {
           <td><input value="${emp.role}" id="role-${emp.id}"></td>
           <td>${emp.productivity}%</td>
           <td>${emp.rating || '-'}</td>
-          <td><textarea id="feedback-${emp.id}">${emp.feedback || ''}</textarea></td>
+          <td>
+            <textarea id="feedback-${emp.id}" onclick="openFeedbackTab(${emp.id})" readonly>${emp.feedback || ''}</textarea>
+          </td>
           <td>${emp.updated_at}</td>
           <td>
             <button onclick="updateEmployee(${emp.id})">Save</button>
@@ -227,4 +229,101 @@ function togglePassword() {
         toggleIcon.style.color = "#555";
         toggleIcon.style.transform = "rotate(0deg)";
     }
+}
+
+function openFeedbackTab(empId) {
+  // Get feedback text from main table
+  const feedbackText = document.getElementById(`feedback-${empId}`).value;
+  const empName = document.getElementById(`name-${empId}`).value;
+  const empRole = document.getElementById(`role-${empId}`).value;
+
+  // Open new tab (same origin)
+  const feedbackWindow = window.open("", "_blank");
+
+  // Write editable feedback view
+  feedbackWindow.document.write(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Feedback - ${empName}</title>
+      <style>
+        body {
+          font-family: 'Segoe UI', Arial, sans-serif;
+          background: #f7f9fb;
+          padding: 2rem;
+        }
+        h2 {
+          color: #2c3e50;
+          text-align: center;
+        }
+        textarea {
+          width: 100%;
+          height: 300px;
+          padding: 1rem;
+          border-radius: 8px;
+          border: 1px solid #ccc;
+          font-size: 1rem;
+          margin-top: 1rem;
+          box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+          background: linear-gradient(135deg, #007bff, #00c6ff);
+          color: white;
+          padding: 0.8rem 1.5rem;
+          border: none;
+          border-radius: 8px;
+          font-size: 1rem;
+          font-weight: 600;
+          cursor: pointer;
+          box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+          margin-top: 1rem;
+          transition: all 0.3s ease;
+        }
+        button:hover {
+          background: linear-gradient(135deg, #339af0, #0072ff);
+          transform: translateY(-2px);
+        }
+        .container {
+          max-width: 700px;
+          margin: 0 auto;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h2>Feedback for ${empName} (${empRole})</h2>
+        <textarea id="feedbackEdit">${feedbackText}</textarea>
+        <button onclick="saveFeedback()">💾 Save Feedback</button>
+      </div>
+
+      <script>
+        function saveFeedback() {
+          const updatedFeedback = document.getElementById('feedbackEdit').value;
+
+          // Save to backend
+          fetch('${backendURL}/employee/${empId}', {
+            method: 'PUT',
+            headers: {
+              'Authorization': 'Bearer ${token}',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ feedback: updatedFeedback })
+          })
+          .then(res => res.json())
+          .then(data => {
+            alert(data.msg || 'Feedback updated');
+            // Optionally close tab after save
+            window.close();
+          })
+          .catch(err => {
+            alert('Failed to update feedback');
+            console.error(err);
+          });
+        }
+      </script>
+    </body>
+    </html>
+  `);
 }
