@@ -1,4 +1,4 @@
-const backendURL = "http://backend:5000";
+const backendURL = "http://localhost:5000";
 let token = "";
 
 async function login() {
