@@ -20,4 +20,4 @@
     EXPOSE 5000
 
     # Run the app
-    CMD ["python", "app.py"]
+    CMD ["bash", "wait-for-db.sh", "python", "app.py"]
