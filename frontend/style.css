@@ -190,7 +190,7 @@ td input[type="number"] {
     white-space: nowrap;
     min-width: 120px;
     background-color: #2ecc71;
-    color:white;
+    color:white;    
 }
 
 .save-btn, .delete-btn {
@@ -199,6 +199,8 @@ td input[type="number"] {
     font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.2s;
+    background-color: #2ecc71;
+    color:white;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
