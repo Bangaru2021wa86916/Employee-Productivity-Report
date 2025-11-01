@@ -17,7 +17,7 @@ body {
 #login-section, #employee-section {
     background-color: rgba(255, 255, 255, 0.9);
     border-radius: 12px;
-    padding: 4rem;
+    padding: 8rem;
     box-shadow: 0 4px 6px rgba(0,0,0,0.2);
 }
 
@@ -188,7 +188,7 @@ td input[type="number"] {
 /* Action Buttons */
 .action-buttons {
     white-space: nowrap;
-    min-width: 140px;
+    min-width: 120px;
     background-color: #2ecc71;
     color:white;
 }
