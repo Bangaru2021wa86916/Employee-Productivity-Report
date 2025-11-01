@@ -28,7 +28,6 @@ services:
       - MYSQL_USER=root
       - MYSQL_PASSWORD=password
       - MYSQL_DATABASE=employee_db
-    command: ["sh", "wait-for-db.sh"]
     ports:
       - "5000:5000"
     networks:
