@@ -1,59 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Productivity Report</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Employee Productivity Report</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <div class="container">
-        <!-- Login Section -->
-        <div id="login-section">
-            <h2>Admin Login</h2>
-            <div class="login-form">
-                <input type="text" id="username" placeholder="Username" required>
-                <input type="password" id="password" placeholder="Password" required>
-                <button onclick="login()">Login</button>
-            </div>
-        </div>
+  <div class="container">
+    <h1>Employee Productivity Portal</h1>
 
-        <!-- Employee Section -->
-        <div id="employee-section" style="display: none;">
-            <h2>Employee Productivity Report</h2>
-
-            <div class="actions">
-                <button onclick="loadEmployees()">Load Employees</button>
-                <button onclick="addEmployee()">Add Employee</button>
-            </div>
-
-            <div id="add-form" style="display:none;">
-                <input type="text" id="addName" placeholder="Name">
-                <input type="text" id="addRole" placeholder="Role">
-                <input type="number" id="addProd" placeholder="Productivity %">
-                <button onclick="addEmployee()">Save</button>
-            </div>
-
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Role</th>
-                            <th>Productivity (%)</th>
-                            <th>Rating</th>
-                            <th>Feedback</th>
-                            <th>Last Updated</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="employee-table"></tbody>
-                </table>
-            </div>
-        </div>
+    <!-- LOGIN SECTION -->
+    <div id="login-section">
+      <h2>Admin Login</h2>
+      <input type="text" id="username" placeholder="Username" />
+      <input type="password" id="password" placeholder="Password" />
+      <button onclick="login()">Login</button>
     </div>
 
-    <script src="script.js"></script>
+    <!-- EMPLOYEE SECTION -->
+    <div id="employee-section" style="display:none;">
+      <h2>
+        Employee Productivity Report
+        <button id="logoutBtn" style="float:right;margin-left:10px;" onclick="logout()">Logout</button>
+      </h2>
+
+      <button onclick="addEmployee()">Add Employee</button>
+      <button onclick="downloadCSV()">Download CSV</button>
+      <button onclick="downloadPDF()">Download PDF</button>
+
+      <div style="margin-top:10px;">
+        <input type="text" id="deleteName" placeholder="Employee name to delete" style="margin-right:8px;">
+        <button onclick="deleteEmployee()">Delete Employee</button>
+      </div>
+
+      <table id="employee-table">
+        <thead>
+          <tr>
+            <th>ID</th><th>Name</th><th>Role</th><th>Productivity</th><th>Rating</th><th>Feedback</th><th>Last Updated</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
