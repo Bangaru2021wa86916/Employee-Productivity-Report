@@ -1,4 +1,3 @@
-// frontend/script.js
 const backendURL = "http://localhost:5000";
 let token = "";
 
@@ -14,8 +13,8 @@ async function login() {
     });
 
     const data = await res.json();
-    if (res.ok && data.access_token) {
-      token = data.access_token;
+    if (res.ok && data.token) {
+      token = data.token;
       document.getElementById("login-section").style.display = "none";
       document.getElementById("employee-section").style.display = "block";
       loadEmployees();
@@ -27,7 +26,6 @@ async function login() {
     console.error(err);
   }
 }
-
 async function addEmployee() {
   const name = prompt("Enter employee name:");
   const role = prompt("Enter employee role:");
@@ -46,8 +44,8 @@ async function addEmployee() {
     });
 
     const data = await res.json();
-    alert(data.msg || "Added");
-    loadEmployees();
+    alert(data.msg);
+    loadEmployees(); // reload table
   } catch (err) {
     alert("Failed to add employee");
     console.error(err);
@@ -59,10 +57,6 @@ async function loadEmployees() {
     const res = await fetch(`${backendURL}/employees`, {
       headers: { "Authorization": `Bearer ${token}` }
     });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.msg || 'Error');
-    }
     const data = await res.json();
 
     const table = document.getElementById("employee-table");
@@ -105,7 +99,7 @@ async function updateEmployee(id) {
     });
 
     const data = await res.json();
-    alert(data.msg || "Updated");
+    alert(data.msg);
     loadEmployees();
   } catch (err) {
     alert("Update failed");
