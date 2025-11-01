@@ -135,6 +135,19 @@ def update_employee(emp_id):
     conn.close()
     return jsonify({"msg": "Employee updated successfully"}), 200
 
+# ---------- DELETE EMPLOYEE ----------
+@app.route("/employee/<int:emp_id>", methods=["DELETE"])
+@jwt_required()
+def delete_employee(emp_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM productivity WHERE id=%s", (emp_id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return jsonify({"msg": "Employee deleted successfully"}), 200
+
+
 
 # ---------- ADD NEW EMPLOYEE ----------
 @app.route("/add", methods=["POST"])
