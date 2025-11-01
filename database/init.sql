@@ -13,9 +13,9 @@ CREATE TABLE IF NOT EXISTS productivity (
 );
 
 INSERT INTO productivity (name, role, productivity) VALUES
-('Alice', 'Azure Cloud Developer', 85),
-('Bob', 'GCP Architect', 90),
-('Charlie', 'AWS Associate', 80);
+('Rohit', 'Azure Cloud Developer', 85),
+('Sanjay', 'GCP Architect', 90),
+('Chandu', 'AWS Associate', 80);
 
 CREATE TABLE IF NOT EXISTS admins (
     id INT AUTO_INCREMENT PRIMARY KEY,
