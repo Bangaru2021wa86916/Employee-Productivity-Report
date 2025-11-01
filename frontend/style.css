@@ -188,14 +188,14 @@ td input[type="number"] {
 /* Action Buttons */
 .action-buttons {
     white-space: nowrap;
-    min-width: 120px;
+    min-width: 140px;
     background-color: #2ecc71;
     color:white;
 }
 
 .save-btn, .delete-btn {
     padding: 0.5rem 1rem;
-    border-radius: 8px;
+    border-radius: 6px;
     font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.2s;
