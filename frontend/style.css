@@ -312,3 +312,50 @@ td input[type="number"] {
         padding: 0.5rem;
     }
 }   
+/* Decorative Action Buttons */
+.actions {
+    display: flex;
+    justify-content: center;
+    gap: 1.2rem;
+    margin-bottom: 1.5rem;
+}
+
+.action-btn {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+.add-btn {
+    background: linear-gradient(135deg, #28a745, #218838);
+}
+
+.add-btn:hover {
+    background: linear-gradient(135deg, #34ce57, #1e7e34);
+    transform: translateY(-2px);
+}
+
+.pdf-btn {
+    background: linear-gradient(135deg, #007bff, #0069d9);
+}
+
+.pdf-btn:hover {
+    background: linear-gradient(135deg, #339af0, #0056b3);
+    transform: translateY(-2px);
+}
+
+.csv-btn {
+    background: linear-gradient(135deg, #ffc107, #e0a800);
+    color: #2c3e50;
+}
+
+.csv-btn:hover {
+    background: linear-gradient(135deg, #ffcd39, #d39e00);
+    transform: translateY(-2px);
+}
