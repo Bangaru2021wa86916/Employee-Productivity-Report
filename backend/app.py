@@ -12,7 +12,11 @@ from mysql.connector import pooling
 import datetime
 import logging
 import os
-
+from flask import send_file
+import csv
+from io import BytesIO, StringIO
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 # ----------------------------------------
 # Logging
 # ----------------------------------------
@@ -188,6 +192,79 @@ def logout():
     blacklisted_tokens.add(jti)
     return jsonify({"msg": "Successfully logged out"}), 200
 
+# ---------- EXPORT CSV ----------
+@app.route("/export/csv", methods=["GET"])
+@jwt_required()
+def export_csv():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM productivity ORDER BY id ASC")
+    employees = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    output = StringIO()
+    writer = csv.DictWriter(output, fieldnames=employees[0].keys())
+    writer.writeheader()
+    writer.writerows(employees)
+    output.seek(0)
+
+    return send_file(
+        BytesIO(output.getvalue().encode('utf-8')),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name='employee_report.csv'
+    )
+
+
+# ---------- EXPORT PDF ----------
+@app.route("/export/pdf", methods=["GET"])
+@jwt_required()
+def export_pdf():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM productivity ORDER BY id ASC")
+    employees = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    buffer = BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+
+    pdf.setFont("Helvetica-Bold", 16)
+    pdf.drawString(200, height - 50, "Employee Productivity Report")
+
+    pdf.setFont("Helvetica", 10)
+    y = height - 100
+    pdf.drawString(50, y, "ID")
+    pdf.drawString(100, y, "Name")
+    pdf.drawString(250, y, "Role")
+    pdf.drawString(400, y, "Prod(%)")
+    pdf.drawString(470, y, "Rating")
+    y -= 20
+
+    for emp in employees:
+        if y < 50:
+            pdf.showPage()
+            y = height - 50
+            pdf.setFont("Helvetica", 10)
+        pdf.drawString(50, y, str(emp["id"]))
+        pdf.drawString(100, y, emp["name"][:20])
+        pdf.drawString(250, y, emp["role"][:25])
+        pdf.drawString(400, y, str(emp["productivity"]))
+        pdf.drawString(470, y, str(emp["rating"] or "-"))
+        y -= 20
+
+    pdf.save()
+    buffer.seek(0)
+
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name="employee_report.pdf",
+        mimetype="application/pdf"
+    )
 
 # ---------- MAIN ----------
 if __name__ == "__main__":
