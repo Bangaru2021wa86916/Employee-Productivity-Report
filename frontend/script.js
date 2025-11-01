@@ -26,6 +26,7 @@ async function login() {
     console.error(err);
   }
 }
+
 async function addEmployee() {
   const name = prompt("Enter employee name:");
   const role = prompt("Enter employee role:");
@@ -72,7 +73,10 @@ async function loadEmployees() {
           <td>${emp.rating || '-'}</td>
           <td><textarea id="feedback-${emp.id}">${emp.feedback || ''}</textarea></td>
           <td>${emp.updated_at}</td>
-          <td><button onclick="updateEmployee(${emp.id})">Save</button></td>
+          <td>
+            <button onclick="updateEmployee(${emp.id})">Save</button>
+            <button onclick="deleteEmployee(${emp.id})">Delete</button>
+          </td>
         </tr>
       `;
     });
@@ -103,6 +107,27 @@ async function updateEmployee(id) {
     loadEmployees();
   } catch (err) {
     alert("Update failed");
+    console.error(err);
+  }
+}
+
+async function deleteEmployee(id) {
+  if (!confirm("Are you sure you want to delete this employee?")) return;
+
+  try {
+    const res = await fetch(`${backendURL}/employee/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
+    });
+
+    const data = await res.json();
+    alert(data.msg);
+    loadEmployees();
+  } catch (err) {
+    alert("Failed to delete employee");
     console.error(err);
   }
 }
