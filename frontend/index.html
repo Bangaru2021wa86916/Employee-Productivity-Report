@@ -20,7 +20,14 @@
 
         <!-- Employee Section -->
         <div id="employee-section" style="display: none;">
-            <h2>Employee Productivity Report</h2>
+
+             <!-- Header with Title and Logout -->
+            <div class="header-bar">
+                <h2>Employee Productivity Report</h2>
+                <button onclick="logout()" style="background-color:#dc3545;color:white;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">
+                    Logout
+                </button>
+            </div>
 
             <div class="actions">
                 <button onclick="addEmployee()">Add Employee</button>
@@ -35,7 +42,6 @@
                 <input type="text" id="addRole" placeholder="Role">
                 <input type="number" id="addProd" placeholder="Productivity %">
                 <button onclick="addEmployee()">Save</button>
-                <button onclick="logout()" style="background-color:#dc3545;color:white;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">Logout</button>
             </div>
                  
             <div class="table-container">
@@ -57,7 +63,15 @@
             </div>
         </div>
     </div>
-
+    <script>
+        function logout() {
+            // Simple logout — clears JWT and goes back to login
+            if (confirm("Are you sure you want to logout?")) {
+                localStorage.removeItem("token");
+                window.location.reload();
+            }
+        }
+    </script>>
     <script src="script.js"></script>
 </body>
 </html>

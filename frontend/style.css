@@ -301,3 +301,10 @@ td input[type="number"] {
         padding: 0.5rem;
     }
 }   
+.header-bar 
+{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
