@@ -64,22 +64,23 @@ async function loadEmployees() {
     table.innerHTML = "";
 
     data.employees.forEach(emp => {
-      table.innerHTML += `
-        <tr>
-          <td>${emp.id}</td>
-          <td><input value="${emp.name}" id="name-${emp.id}"></td>
-          <td><input value="${emp.role}" id="role-${emp.id}"></td>
-          <td>${emp.productivity}%</td>
-          <td>${emp.rating || '-'}</td>
-          <td><textarea id="feedback-${emp.id}">${emp.feedback || ''}</textarea></td>
-          <td>${emp.updated_at}</td>
-          <td>
-            <button onclick="updateEmployee(${emp.id})">Save</button>
-            <button onclick="deleteEmployee(${emp.id})">Delete</button>
-          </td>
-        </tr>
-      `;
-    });
+  table.innerHTML += `
+    <tr>
+      <td>${emp.id}</td>
+      <td><input value="${emp.name}" id="name-${emp.id}"></td>
+      <td><input value="${emp.role}" id="role-${emp.id}"></td>
+      <td>${emp.productivity}%</td>
+      <td>${emp.rating || '-'}</td>
+      <td><textarea id="feedback-${emp.id}">${emp.feedback || ''}</textarea></td>
+      <td>${emp.updated_at}</td>
+      <td>
+        <button onclick="updateEmployee(${emp.id})">Save</button>
+        <button style="background:#dc3545;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;" onclick="deleteEmployee(${emp.id})">Delete</button>
+      </td>
+    </tr>
+  `;
+});
+
   } catch (err) {
     alert("Failed to load employees");
     console.error(err);
