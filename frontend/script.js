@@ -132,3 +132,46 @@ async function deleteEmployee(id) {
     console.error(err);
   }
 }
+
+async function downloadPDF() {
+  try {
+    const res = await fetch(`${backendURL}/export/pdf`, {
+      method: "GET",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error("Failed to download PDF");
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "employee_report.pdf";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } catch (err) {
+    alert("Error downloading PDF");
+    console.error(err);
+  }
+}
+
+async function downloadCSV() {
+  try {
+    const res = await fetch(`${backendURL}/export/csv`, {
+      method: "GET",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error("Failed to download CSV");
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "employee_report.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } catch (err) {
+    alert("Error downloading CSV");
+    console.error(err);
+  }
+}
+
