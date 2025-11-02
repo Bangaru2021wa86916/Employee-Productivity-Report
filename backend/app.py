@@ -17,8 +17,7 @@ import csv
 from io import BytesIO, StringIO
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
-import pyotp
-import secrets# ----------------------------------------
+# ----------------------------------------
 # Logging
 # ----------------------------------------
 logging.basicConfig(level=logging.DEBUG)
@@ -68,15 +67,7 @@ blacklisted_tokens = set()
 @jwt.token_in_blocklist_loader
 def check_if_token_in_blacklist(jwt_header, jwt_payload):
     return jwt_payload["jti"] in blacklisted_tokens
-# Helper: fetch admin row
-def fetch_admin(username):
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM admins WHERE username = %s", (username,))
-    user = cursor.fetchone()
-    cursor.close()
-    conn.close()
-    return user
+
 # ----------------------------------------
 # Routes
 # ----------------------------------------
@@ -96,137 +87,19 @@ def login():
     if not username or not password:
         return jsonify({"msg": "Missing username or password"}), 400
 
-    user = fetch_admin(username)
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM admins WHERE username = %s", (username,))
+    user = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
     if not user or not pbkdf2_sha256.verify(password, user["password_hash"]):
         return jsonify({"msg": "Invalid username or password"}), 401
 
-    # If MFA enabled -> ask for OTP (return a short-lived MFA-pending token)
-    if user.get("mfa_enabled"):
-        mfa_token = create_access_token(identity=username,
-                                        additional_claims={"mfa": "pending"},
-                                        expires_delta=datetime.timedelta(minutes=5))
-        return jsonify({"mfa_required": True, "mfa_token": mfa_token}), 200
-
-    # If MFA not enabled -> issue normal access token
-
     token = create_access_token(identity=username)
     return jsonify({"token": token}), 200
 
-# ---------- MFA: Provision (returns secret & otpauth URI) ----------
-# This endpoint allows the admin to create a secret (protected by username+password).
-# The client should show the returned otpauth_uri as a QR for the authenticator app.
-@app.route("/mfa/provision", methods=["POST"])
-@limiter.limit("5 per minute")
-def mfa_provision():
-    data = request.get_json()
-    username = data.get("username")
-    password = data.get("password")
-    if not username or not password:
-        return jsonify({"msg": "Missing username/password"}), 400
-
-    user = fetch_admin(username)
-    if not user or not pbkdf2_sha256.verify(password, user["password_hash"]):
-        return jsonify({"msg": "Invalid credentials"}), 401
-
-    # Generate a new random secret
-    secret = pyotp.random_base32()
-    # Generate otpauth uri for QR codes (issuer and account name can be changed)
-    issuer_name = "EmployeeProductivityApp"
-    otpauth_uri = pyotp.totp.TOTP(secret).provisioning_uri(name=username, issuer_name=issuer_name)
-
-    return jsonify({"secret": secret, "otpauth_uri": otpauth_uri}), 200
-
-# ---------- MFA: Enable (confirm OTP and persist secret) ----------
-@app.route("/mfa/enable", methods=["POST"])
-@limiter.limit("5 per minute")
-def mfa_enable():
-    data = request.get_json()
-    username = data.get("username")
-    password = data.get("password")
-    otp = data.get("otp")
-    secret = data.get("secret")
-
-    if not all([username, password, otp, secret]):
-        return jsonify({"msg": "Missing fields (username, password, secret, otp required)"}), 400
-
-    user = fetch_admin(username)
-    if not user or not pbkdf2_sha256.verify(password, user["password_hash"]):
-        return jsonify({"msg": "Invalid credentials"}), 401
-
-    totp = pyotp.TOTP(secret)
-    if not totp.verify(str(otp), valid_window=1):
-        return jsonify({"msg": "Invalid OTP"}), 401
-
-    # Persist secret and enable MFA
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("UPDATE admins SET mfa_secret=%s, mfa_enabled=1 WHERE username=%s", (secret, username))
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-    return jsonify({"msg": "MFA enabled successfully"}), 200
-
-# ---------- MFA Validate (finalize login using mfa_token + otp) ----------
-@app.route("/mfa/validate", methods=["POST"])
-@limiter.limit("10 per minute")
-@jwt_required()
-def mfa_validate():
-    # This endpoint expects the client to send the short-lived MFA token as Authorization header.
-    # We check the JWT claim to ensure it was an MFA-pending token.
-    jwt_payload = get_jwt()
-    if jwt_payload.get("mfa") != "pending":
-        return jsonify({"msg": "Invalid or expired MFA token"}), 401
-
-    username = get_jwt_identity()
-    data = request.get_json()
-    otp = data.get("otp")
-    if not otp:
-        return jsonify({"msg": "Missing OTP"}), 400
-
-    user = fetch_admin(username)
-    if not user or not user.get("mfa_enabled") or not user.get("mfa_secret"):
-        return jsonify({"msg": "MFA not configured for this user"}), 400
-
-    totp = pyotp.TOTP(user["mfa_secret"])
-    if not totp.verify(str(otp), valid_window=1):
-        return jsonify({"msg": "Invalid OTP"}), 401
-
-    # OTP valid — issue normal access token
-    token = create_access_token(identity=username)
-    return jsonify({"token": token}), 200
-
-# ---------- MFA Disable (optional) ----------
-@app.route("/mfa/disable", methods=["POST"])
-@limiter.limit("5 per minute")
-def mfa_disable():
-    data = request.get_json()
-    username = data.get("username")
-    password = data.get("password")
-    otp = data.get("otp")
-
-    if not all([username, password, otp]):
-        return jsonify({"msg": "Missing username, password or otp"}), 400
-
-    user = fetch_admin(username)
-    if not user or not pbkdf2_sha256.verify(password, user["password_hash"]):
-        return jsonify({"msg": "Invalid credentials"}), 401
-
-    if not user.get("mfa_enabled") or not user.get("mfa_secret"):
-        return jsonify({"msg": "MFA not enabled for this account"}), 400
-
-    totp = pyotp.TOTP(user["mfa_secret"])
-    if not totp.verify(str(otp), valid_window=1):
-        return jsonify({"msg": "Invalid OTP"}), 401
-
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("UPDATE admins SET mfa_secret=NULL, mfa_enabled=0 WHERE username=%s", (username,))
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-    return jsonify({"msg": "MFA disabled successfully"}), 200
 
 # ---------- GET ALL EMPLOYEES ----------
 @app.route("/employees", methods=["GET"])
