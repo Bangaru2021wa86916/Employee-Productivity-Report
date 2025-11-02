@@ -20,7 +20,7 @@ INSERT INTO productivity (name, role, productivity) VALUES
 CREATE TABLE IF NOT EXISTS admins (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) UNIQUE,
-    password_hash VARCHAR(255)
+    password_hash VARCHAR(255),
     mfa_secret VARCHAR(255),
     mfa_enabled TINYINT(1) DEFAULT 0
 );
