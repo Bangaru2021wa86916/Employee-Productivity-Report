@@ -10,6 +10,7 @@ window.onload = () => {
   }
 };
 
+// Modified login() — handles mfa_required response
 async function login() {
   const username = document.getElementById("username").value;
   const password = document.getElementById("password").value;
@@ -22,12 +23,45 @@ async function login() {
     });
 
     const data = await res.json();
-    if (res.ok && data.token) {
-      token = data.token;
-      localStorage.setItem("token", token); // ✅ store token
-      document.getElementById("login-section").style.display = "none";
-      document.getElementById("employee-section").style.display = "block";
-      loadEmployees();
+
+    if (res.ok) {
+      if (data.mfa_required) {
+        // Ask for OTP and then call mfa validate using the returned mfa_token
+        const otp = prompt("Enter the 6-digit MFA code from your Authenticator app:");
+        if (!otp) {
+          alert("MFA code required");
+          return;
+        }
+        // validate MFA using mfa_token as Bearer token
+        const mfaRes = await fetch(`${backendURL}/mfa/validate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${data.mfa_token}`
+          },
+          body: JSON.stringify({ otp })
+        });
+
+        const mfaData = await mfaRes.json();
+        if (mfaRes.ok && mfaData.token) {
+          token = mfaData.token;
+          localStorage.setItem("token", token);
+          document.getElementById("login-section").style.display = "none";
+          document.getElementById("employee-section").style.display = "block";
+          loadEmployees();
+        } else {
+          alert(mfaData.msg || "MFA validation failed");
+        }
+      } else if (data.token) {
+        // No MFA, login as before
+        token = data.token;
+        localStorage.setItem("token", token);
+        document.getElementById("login-section").style.display = "none";
+        document.getElementById("employee-section").style.display = "block";
+        loadEmployees();
+      } else {
+        alert("Unknown login response");
+      }
     } else {
       alert(data.msg || "Login failed");
     }
@@ -36,6 +70,7 @@ async function login() {
     console.error(err);
   }
 }
+
 
 async function addEmployee() {
   const name = prompt("Enter employee name:");
