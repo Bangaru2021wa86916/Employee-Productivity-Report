@@ -270,7 +270,7 @@ td input[type="number"] {
 }
 
 /* Responsive design */
-@media (max-width: 1200px) {
+@media (max-width: 1300px) {
     .container {
         margin: 1rem;
     }
