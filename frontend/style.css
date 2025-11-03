@@ -301,7 +301,7 @@ td input[type="number"] {
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 485px) {
     .table-container {
         margin: 0;
         padding: 0.5rem;
