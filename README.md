@@ -32,7 +32,23 @@ The application follows a multi-tier containerized architecture orchestrated via
 * **API Testing:** Postman
 
 ---
+⚙️ Deployment
 
+The application uses Docker containers for running the Flask backend, MySQL database, and Nginx web server.
+
+🎓 Academic Information
+
+Degree: Master of Technology (M.Tech)
+
+Institution: BITS Pilani
+
+Project: Employee Productivity Report System
+
+Project Type: Dissertation Project
+
+👨‍💻 Author
+
+Bangaru Tejachari
 ## Project Structure
 
 ```text
